@@ -10,13 +10,13 @@ class AuthResult(Enum):
 
 class Auth:
     def __init__(self, dbmanager: DBmanager) -> None:
-        self.DBmanager = dbmanager
+        self.DB_manager = dbmanager
         pass
 
     def login(self, userdata):
         username = userdata["username"]
         password = userdata["password"]
-        user_card = self.DBmanager.find_login(username) # (login, pass, auth_id)
+        user_card = self.DB_manager.find_login(username) # (login, pass, auth_id)
         
         if not user_card:
             return AuthResult.NotFound

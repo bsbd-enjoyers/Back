@@ -1,7 +1,6 @@
 from flask import Flask, request, make_response
 from db.db_manager import DBmanager
-from auth.auth import Auth
-from validate.validate import *
+from auth import Auth
 
 app = Flask(__name__)
 db_manager = DBmanager()
