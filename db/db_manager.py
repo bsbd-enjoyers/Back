@@ -3,8 +3,8 @@ from config import POSTGRESQL_LOGIN
 
 
 class DataBaseManager:
-    def __init__(self):
-        self.conn = postgresql.connect(**POSTGRESQL_LOGIN)
+    def __init__(self, creds):
+        self.conn = postgresql.connect(**creds)
 
     def find_client(self, username):  # deprecated
         with self.conn.cursor() as cur:

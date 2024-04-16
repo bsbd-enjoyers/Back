@@ -2,9 +2,10 @@ from flask import Flask, request, make_response
 from db.db_manager import DataBaseManager
 from auth.auth import Auth
 from validate.validate import *
+from config import POSTGRESQL_LOGIN
 
 app = Flask(__name__)
-db_manager = DataBaseManager()
+db_manager = DataBaseManager(POSTGRESQL_LOGIN)
 auth = Auth(db_manager)
 
 

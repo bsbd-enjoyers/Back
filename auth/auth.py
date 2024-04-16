@@ -33,10 +33,10 @@ class Auth:
         return AuthResult.Accept
 
     @staticmethod
-    def gen_jwt(username) -> str:
+    def gen_jwt(username, role) -> str:
         now = datetime.now()
         dt_string = now.strftime("%d/%m/%Y-%H:%M:%S")
-        jwt_token = jwt.encode({"username": username, "date": dt_string}, JWT_SECRET, algorithm="HS256")
+        jwt_token = jwt.encode({"username": username, "date": dt_string, "role": role}, JWT_SECRET, algorithm="HS256")
         return jwt_token
 
     def register(self, userdata):

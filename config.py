@@ -1,4 +1,4 @@
-JWT_SECRET = "b6a1617e57bbe366a2d879984062223f"
+JWT_SECRET = "b6a1617e57bbe366pnTgZfyC2hmErNJCenfEBkGQa2d879984062223f"
 POSTGRESQL_LOGIN = {
     "database": "avito",
     "host": "localhost",
