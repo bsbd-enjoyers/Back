@@ -6,7 +6,7 @@ class DataBaseManager:
     def __init__(self):
         self.conn = postgresql.connect(**POSTGRESQL_LOGIN)
 
-    def find_client(self, username):
+    def find_client(self, username):  # deprecated
         with self.conn.cursor() as cur:
             cur.execute("SELECT client_id, client_full_name, client_email, client_phone, client_login FROM "
                         "public.\"Client\" WHERE client_login=%s", (username,))
@@ -19,3 +19,8 @@ class DataBaseManager:
                         " FROM public.\"Service_data\" WHERE service_data_login=%s", (username,))
             result = cur.fetchone()
         return result
+
+    def create_service_data(self, username, password, role):
+        with self.conn.cursor() as cur:
+            cur.execute("INSERT INTO public.\"Service_data\"( service_data_login, service_data_password,"
+                        "service_data_role) VALUES (%s, %s, %s)", (username, password, role))

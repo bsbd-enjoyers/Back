@@ -39,5 +39,9 @@ class Auth:
         jwt_token = jwt.encode({"username": username, "date": dt_string}, JWT_SECRET, algorithm="HS256")
         return jwt_token
 
-    def register(self, userinfo):
-        pass
+    def register(self, userdata):
+        username = userdata["username"]
+        role = userdata["role"]
+        password = sha512_crypt.hash(userdata["password"])
+        self.DB_manager.create_service_data(username, password, role)
+
