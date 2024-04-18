@@ -1,5 +1,5 @@
 from enum import Enum
-
+from dto.auth import AuthData, CheckLogin, RegisterData
 from passlib.hash import sha512_crypt
 from datetime import datetime
 import jwt
@@ -19,18 +19,19 @@ class Auth:
         self.DB_manager = dbmanager
         pass
 
-    def login(self, userdata) -> AuthResult:
-        username = userdata["username"]
-        password = userdata["password"]
-        user_card = self.DB_manager.find_account(username)  # (login, pass, auth_id)
+    def login(self, userdata: AuthData) -> bool:
+        user_card = self.DB_manager.find_account(userdata.username)  # (login, pass, auth_id)
 
         if not user_card:
-            return AuthResult.NotFound
+            print(f"No such user: {userdata.username}")
+            return False
 
-        if not sha512_crypt.verify(password, user_card[1]):
-            return AuthResult.WrongData
+        if not sha512_crypt.verify(userdata.password, user_card[1]):
+            print(f"Wrong Password for user {userdata.username}")
+            return False
 
-        return AuthResult.Accept
+        print(f"Auth Success for user {userdata.username}")
+        return True
 
     @staticmethod
     def gen_jwt(username, role) -> str:
@@ -39,9 +40,10 @@ class Auth:
         jwt_token = jwt.encode({"username": username, "date": dt_string, "role": role}, JWT_SECRET, algorithm="HS256")
         return jwt_token
 
-    def register(self, userdata):
-        username = userdata["username"]
-        role = userdata["role"]
-        password = sha512_crypt.hash(userdata["password"])
-        self.DB_manager.create_service_data(username, password, role)
+    def check_login_exists(self, userdata: CheckLogin):
+        user_card = self.DB_manager.find_account(userdata.username)
+        print(f"Verified user {userdata.username} existence with result {bool(user_card)}")
+        return bool(user_card)
 
+    def register(self, userdata: RegisterData):
+        self.DB_manager.create_service_data(userdata.username, userdata.password, userdata.role)
