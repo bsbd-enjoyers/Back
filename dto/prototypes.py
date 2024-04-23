@@ -9,5 +9,5 @@ class DataPrototype:
 
 
 class ResponsePrototype:
-    def sdf (self):
-       pass
+    def get_dict(self):
+        return self.__dict__

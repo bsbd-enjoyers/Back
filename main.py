@@ -1,6 +1,6 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, jsonify
 from db.db_manager import DataBaseManager
-from auth.auth import Auth
+from auth.auth import Auth, AuthResult, RegisterResult
 from dto.auth import *
 from dto.response import SimpleResult
 from config import POSTGRESQL_LOGIN
@@ -28,7 +28,7 @@ def login():
 
         resp = make_response()
 
-        if auth.login(auth_class):
+        if auth.login(auth_class) == AuthResult.Accept:
             resp.set_cookie("AuthTokenJWT", value=auth.gen_jwt(auth_class.username))
 
         return resp, 200
@@ -50,11 +50,27 @@ def check_login():
         return 400
 
     if auth.check_login_exists(check_login_class):
-        return SimpleResult(True).make_response()
+        return jsonify(SimpleResult(True).get_dict())
 
-    return SimpleResult(False).make_response()
+    return jsonify(SimpleResult(False).get_dict())
 
 
 @app.route('/register', methods=["POST"])
 def register():
-    return 200
+    try:
+        register_json = request.get_json()
+    except Exception as e:
+        print(e)
+        return 500
+
+    try:
+        register_class = RegisterData(register_json)
+    except ValueError as e:
+        print(e)
+        return 400
+
+    if auth.register(register_class) ==  RegisterResult.Accept:
+        return jsonify(SimpleResult(True).get_dict())
+
+    return jsonify(SimpleResult(False).get_dict())
+

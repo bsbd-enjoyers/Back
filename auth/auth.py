@@ -14,24 +14,29 @@ class AuthResult(Enum):
     Accept = 3
 
 
+class RegisterResult(Enum):
+    Accept = 1
+    Decline = 2
+
+
 class Auth:
     def __init__(self, dbmanager: DataBaseManager) -> None:
         self.DB_manager = dbmanager
         pass
 
-    def login(self, userdata: AuthData) -> bool:
+    def login(self, userdata: AuthData) -> AuthResult:
         user_card = self.DB_manager.find_account(userdata.username)  # (login, pass, auth_id)
 
         if not user_card:
             print(f"No such user: {userdata.username}")
-            return False
+            return AuthResult.NotFound
 
         if not sha512_crypt.verify(userdata.password, user_card[1]):
             print(f"Wrong Password for user {userdata.username}")
-            return False
+            return AuthResult.WrongData
 
         print(f"Auth Success for user {userdata.username}")
-        return True
+        return AuthResult.Accept
 
     @staticmethod
     def gen_jwt(username, role) -> str:
