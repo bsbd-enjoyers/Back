@@ -45,6 +45,10 @@ class Auth:
         jwt_token = jwt.encode({"username": username, "date": dt_string, "role": role}, JWT_SECRET, algorithm="HS256")
         return jwt_token
 
+    @staticmethod
+    def check_jwt(jwt_token):
+        pass
+
     def check_login_exists(self, userdata: CheckLogin):
         user_card = self.DB_manager.find_account(userdata.username)
         print(f"Verified user {userdata.username} existence with result {bool(user_card)}")
@@ -52,3 +56,5 @@ class Auth:
 
     def register(self, userdata: RegisterData):
         self.DB_manager.create_service_data(userdata.username, userdata.password, userdata.role)
+        # сделать handler не уникального логина
+        return RegisterResult.Accept

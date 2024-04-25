@@ -10,67 +10,61 @@ db_manager = DataBaseManager(POSTGRESQL_LOGIN)
 auth = Auth(db_manager)
 
 
-@app.route('/login', methods=["POST"])
+@app.route('/login', methods=["POST", "GET"])
 def login():
     if request.method == "POST":
 
-        try:
-            login_json = request.get_json()
-        except Exception as e:
-            print(e)
-            return 500
+        login_json = request.get_json()
 
         try:
             auth_class = AuthData(login_json)
         except ValueError as e:
             print(e)
-            return 400
+            return "Bad Json", 400
 
         resp = make_response()
 
         if auth.login(auth_class) == AuthResult.Accept:
-            resp.set_cookie("AuthTokenJWT", value=auth.gen_jwt(auth_class.username))
+            resp.set_cookie("AuthTokenJWT", value=auth.gen_jwt(auth_class.username, "client"))
 
         return resp, 200
-    return 300
+    return "Bad request", 400
+    #elif request.method == "GET":
 
 
 @app.route("/check_login", methods=["POST"])
 def check_login():
-    try:
-        login_json = request.get_json()
-    except Exception as e:
-        print(e)
-        return 500
+
+    login_json = request.get_json()
 
     try:
         check_login_class = CheckLogin(login_json)
     except ValueError as e:
         print(e)
-        return 400
+        return "Bad Json", 400
 
+    print(login_json)
     if auth.check_login_exists(check_login_class):
-        return jsonify(SimpleResult(True).get_dict())
+        return jsonify(SimpleResult(True).get_dict()), 200
 
-    return jsonify(SimpleResult(False).get_dict())
+    return jsonify(SimpleResult(False).get_dict()), 200
 
 
 @app.route('/register', methods=["POST"])
 def register():
-    try:
-        register_json = request.get_json()
-    except Exception as e:
-        print(e)
-        return 500
+    register_json = request.get_json()
 
     try:
         register_class = RegisterData(register_json)
     except ValueError as e:
         print(e)
-        return 400
+        return "Bad Json", 400
 
-    if auth.register(register_class) ==  RegisterResult.Accept:
+    if auth.register(register_class) == RegisterResult.Accept:
         return jsonify(SimpleResult(True).get_dict())
 
     return jsonify(SimpleResult(False).get_dict())
 
+
+if __name__ == '__main__':
+    app.run("0.0.0.0")

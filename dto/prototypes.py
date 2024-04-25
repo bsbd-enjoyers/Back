@@ -3,9 +3,9 @@ from flask import json
 
 class DataPrototype:
     def check_empty(self):
-        for _, value in self.__dict__:
+        for field, value in self.__dict__.items():
             if value is None:
-                raise ValueError(f"Empty Field in DTO {self.__class__}")
+                raise ValueError(f"Empty Field {field} in DTO {self.__class__}")
 
 
 class ResponsePrototype:

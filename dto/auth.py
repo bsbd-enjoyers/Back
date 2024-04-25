@@ -20,7 +20,7 @@ class RegisterData(DataPrototype):
             self.skills = userdata.get("skills")
             self.about = userdata.get("")
         self.check_empty()
-        self.password = sha512_crypt(self.password)
+        self.password = sha512_crypt.hash(self.password)
 
 
 class CheckLogin(DataPrototype):
