@@ -24,3 +24,11 @@ class DataBaseManager:
         with self.conn.cursor() as cur:
             cur.execute("INSERT INTO public.\"Service_data\"( service_data_login, service_data_password,"
                         "service_data_role) VALUES (%s, %s, %s)", (username, password, role))
+            self.conn.commit()
+
+    def select_all(self):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT * FROM public.\"Service_data\""
+                        "ORDER BY service_data_id ASC")
+            result = cur.fetchall()
+        return result
