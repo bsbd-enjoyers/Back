@@ -27,3 +27,11 @@ class CheckLogin(DataPrototype):
     def __init__(self, userdata):
         self.username = userdata.get("login")
         self.check_empty()
+
+
+class JwtData(DataPrototype):
+    def __init__(self, jwt_dict):
+        self.login = jwt_dict.get("login")
+        self.date = jwt_dict.get("date")
+        self.role = jwt_dict.get("role")
+        self.check_empty()

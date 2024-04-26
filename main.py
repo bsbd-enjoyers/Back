@@ -1,6 +1,6 @@
 from flask import Flask, request, make_response, jsonify
 from db.db_manager import DataBaseManager
-from auth.auth import Auth, AuthResult, RegisterResult
+from action.auth import Auth, AuthResult, RegisterResult, JwtCheckResult
 from dto.auth import *
 from dto.response import SimpleResult
 from config import POSTGRESQL_LOGIN
@@ -28,11 +28,23 @@ def login():
             resp.set_cookie("AuthTokenJWT", value=auth.gen_jwt(auth_class.username, "client"))
 
         return resp, 200
+    elif request.method == "GET":
+        cookies = request.headers.get("Cookies")
+        if cookies is None:
+            return "No token", 403
+        cookies, check_result = auth.check_jwt(cookies)
+        print(f"Cookies checked with result {check_result}")
+
+        if check_result == JwtCheckResult.Verified:
+            return "In Development", 200
+        else:
+            return "Bad token", 403
+
     return "Bad request", 400
     #elif request.method == "GET":
 
 
-@app.route("/check_login", methods=["POST"])
+@app.route("/check_login", methods=["POST", "GET"])
 def check_login():
 
     login_json = request.get_json()

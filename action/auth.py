@@ -1,5 +1,5 @@
 from enum import Enum
-from dto.auth import AuthData, CheckLogin, RegisterData
+from dto.auth import AuthData, CheckLogin, RegisterData, JwtData
 from passlib.hash import sha512_crypt
 from datetime import datetime
 import jwt
@@ -17,6 +17,13 @@ class AuthResult(Enum):
 class RegisterResult(Enum):
     Accept = 1
     Decline = 2
+
+
+class JwtCheckResult(Enum):
+    Expired = 1
+    BadSignature = 2
+    Verified = 3
+    BadFields = 4
 
 
 class Auth:
@@ -41,13 +48,24 @@ class Auth:
     @staticmethod
     def gen_jwt(username, role) -> str:
         now = datetime.now()
-        dt_string = now.strftime("%d/%m/%Y-%H:%M:%S")
-        jwt_token = jwt.encode({"username": username, "date": dt_string, "role": role}, JWT_SECRET, algorithm="HS256")
+        date_string = now.strftime("%d/%m/%Y/%H/%M/%S")
+        jwt_token = jwt.encode({"username": username, "date": date_string, "role": role}, JWT_SECRET, algorithm="HS256")
         return jwt_token
 
     @staticmethod
     def check_jwt(jwt_token):
-        pass
+        try:
+            jwt_data = jwt.decode(jwt_token, JWT_SECRET, algorithms="HS256")
+        except jwt.exceptions.InvalidSignatureError:
+            return None, JwtCheckResult.BadSignature
+
+        try:
+            jwt_data = JwtData(jwt_data)
+        except ValueError:
+            return None, JwtCheckResult.BadFields
+
+        date = datetime.strptime(jwt_data.date, "%d/%m/%Y/%H/%M/%S")
+        return jwt_data, JwtCheckResult.Verified
 
     def check_login_exists(self, userdata: CheckLogin):
         user_card = self.DB_manager.find_account(userdata.username)
