@@ -6,7 +6,6 @@ from dto.auth import *
 from dto import SimpleResult
 from config import POSTGRESQL_LOGIN, JWT_SECRET
 from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
@@ -16,6 +15,10 @@ provide = Provide(db_manager)
 
 app.config["JWT_SECRET_KEY"] = JWT_SECRET
 jwt = JWTManager(app)
+
+
+def get_jwt_token():
+    return request.headers.get("Cookie").replace("AuthTokenJWT=", "")
 
 
 @app.route('/login', methods=["POST", "GET"])
@@ -38,8 +41,7 @@ def login():
         return resp, 200
 
     elif request.method == "GET":
-        #print(request.headers.items())
-        cookies = request.headers.get("Cookie").replace("AuthTokenJWT=", "")
+        cookies = get_jwt_token()
         print(cookies)
 
         if cookies is None:
@@ -71,6 +73,21 @@ def check_login():
         return jsonify(SimpleResult(True).get_dict()), 200
 
     return jsonify(SimpleResult(False).get_dict()), 200
+
+
+@app.route("/search", methods=["POST"])
+def search():
+    return "cool", 200 # TODO: then then search
+
+
+@app.route("/orders", methods=["GET", "POST"])
+def orders():
+    return "cool", 200  # TODO: do orders first
+
+
+@app.route("/drop_session", methods=["GET"])
+def drop_session():
+    return "cool", 200 # TODO: then session
 
 
 @app.route('/register', methods=["POST"])

@@ -66,5 +66,4 @@ class DataBaseManager:
             cur.execute("SELECT skill_type, skill_description "
                         "FROM public.\"Skill\" WHERE master_id=%s", (master_id,))
             result = cur.fetchall()
-            print(result)
         return result

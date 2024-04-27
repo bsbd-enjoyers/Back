@@ -65,7 +65,7 @@ class Auth:
         except ValueError:
             return None, JwtCheckResult.BadFields
 
-        date = datetime.strptime(jwt_data.date, "%d/%m/%Y/%H/%M/%S")
+        date = datetime.strptime(jwt_data.date, "%d/%m/%Y/%H/%M/%S")  # TODO: CHECK DATE
         return jwt_data, JwtCheckResult.Verified
 
     def check_login_exists(self, userdata: [CheckLogin, RegisterData]):
