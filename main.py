@@ -13,9 +13,7 @@ auth = Auth(db_manager)
 @app.route('/login', methods=["POST", "GET"])
 def login():
     if request.method == "POST":
-
         login_json = request.get_json()
-
         try:
             auth_class = AuthData(login_json)
         except ValueError as e:
@@ -28,10 +26,14 @@ def login():
             resp.set_cookie("AuthTokenJWT", value=auth.gen_jwt(auth_class.username, "client"))
 
         return resp, 200
+
     elif request.method == "GET":
-        cookies = request.headers.get("Cookies")
+        print(request.headers.items())
+        cookies = request.headers.get("Cookie")
+
         if cookies is None:
             return "No token", 403
+
         cookies, check_result = auth.check_jwt(cookies)
         print(f"Cookies checked with result {check_result}")
 
@@ -41,12 +43,10 @@ def login():
             return "Bad token", 403
 
     return "Bad request", 400
-    #elif request.method == "GET":
 
 
 @app.route("/check_login", methods=["POST", "GET"])
 def check_login():
-
     login_json = request.get_json()
 
     try:
@@ -55,7 +55,7 @@ def check_login():
         print(e)
         return "Bad Json", 400
 
-    print(login_json)
+    # print(login_json)
     if auth.check_login_exists(check_login_class):
         return jsonify(SimpleResult(True).get_dict()), 200
 
