@@ -11,8 +11,10 @@ class AuthData(DataPrototype):
 
 class RegisterData(DataPrototype):
     def __init__(self, userdata):
+        self.service_data_id = None
         self.username = userdata.get("login")
         self.password = userdata.get("password")
+        self.fullname = userdata.get("fullname")
         self.role = userdata.get("role")
         self.email = userdata.get("email")
         self.phone = userdata.get("phone")
@@ -31,7 +33,7 @@ class CheckLogin(DataPrototype):
 
 class JwtData(DataPrototype):
     def __init__(self, jwt_dict):
-        self.login = jwt_dict.get("login")
+        self.username = jwt_dict.get("username")
         self.date = jwt_dict.get("date")
         self.role = jwt_dict.get("role")
         self.check_empty()

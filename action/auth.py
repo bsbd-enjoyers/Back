@@ -60,6 +60,7 @@ class Auth:
             return None, JwtCheckResult.BadSignature
 
         try:
+            #print(jwt_data)
             jwt_data = JwtData(jwt_data)
         except ValueError:
             return None, JwtCheckResult.BadFields
@@ -73,6 +74,8 @@ class Auth:
         return bool(user_card)
 
     def register(self, userdata: RegisterData):
-        self.DB_manager.create_service_data(userdata.username, userdata.password, userdata.role)
-        # сделать handler не уникального логина
-        return RegisterResult.Accept
+        if not self.check_login_exists(userdata.username):
+            self.DB_manager.create_service_data(userdata)
+            self.DB_manager.create_client_profile(userdata)
+            return RegisterResult.Accept
+        return RegisterResult.Decline

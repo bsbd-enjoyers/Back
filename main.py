@@ -38,8 +38,9 @@ def login():
         return resp, 200
 
     elif request.method == "GET":
-        print(request.headers.items())
-        cookies = request.headers.get("Cookie")
+        #print(request.headers.items())
+        cookies = request.headers.get("Cookie").replace("AuthTokenJWT=", "")
+        print(cookies)
 
         if cookies is None:
             return "No token", 403

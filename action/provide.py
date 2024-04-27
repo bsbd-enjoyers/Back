@@ -8,7 +8,7 @@ class Provide:
         self.DB_manager = dbmanager
 
     def get_userinfo(self, jwt_data: JwtData) -> UserInfo:
-        service_id = self.DB_manager.get_service_id(jwt_data.login)
+        service_id = self.DB_manager.get_service_id(jwt_data.username)
         userinfo = self.DB_manager.get_client(service_id) if jwt_data.role == "client" \
             else self.DB_manager.get_master(service_id)
         userinfo = UserInfo(userinfo)

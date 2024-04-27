@@ -1,10 +1,10 @@
 from requests import *
 
 check_login_json = {
-    "login": "moisha"
+    "login": "dod"
 }
 register_json = {
-    "login": "moisha",
+    "login": "dod",
     "password": "pupa",
     "role": "client",
     "fullname": "abobchik",
@@ -52,6 +52,6 @@ def login(data):
     print(resp.text)
 
 
-#check_login(check_login_json)
-#register(register_json)
-login(login_json)
+check_login(check_login_json)
+register(register_json)
+#login(login_json)
