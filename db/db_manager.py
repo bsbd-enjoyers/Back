@@ -31,11 +31,12 @@ class DataBaseManager:
     def create_master_profile(self, userdata: RegisterData):
         with self.conn.cursor() as cur:
             cur.execute("INSERT INTO public.\"Master\"(master_full_name, master_email, master_phone, "
-                        "master_detailed_info, master_service_id) VALUES (%s, %s, %s, %s) RETURNING master_id",
+                        "master_detailed_info, master_service_id) VALUES (%s, %s, %s, %s, %s) RETURNING master_id",
                         (userdata.fullname, userdata.email, userdata.phone, userdata.about, userdata.service_data_id))
             userdata.add_master_id(cur.fetchone()[0])
+            print("INSERT INTO public.\"Skill\"(master_id, skill_type, skill_description) VALUES " + ",".join([""]*len(userdata.skills)))
             cur.execute("INSERT INTO public.\"Skill\"(master_id, skill_type, skill_description) "
-                        "VALUES " + ",".join(["(%s, %s, %s)"]*len(userdata.skills)),
+                        "VALUES " + ",".join(["%s"]*len(userdata.skills)),
                         userdata.get_skill_tuples())
             self.conn.commit()
 
@@ -49,7 +50,7 @@ class DataBaseManager:
     def get_client(self, service_id):
         with self.conn.cursor() as cur:
             cur.execute("SELECT client_id, client_full_name, client_email, client_phone "
-                        "FROM public.\"Client\" WHERE client_service_id=%s", service_id)
+                        "FROM public.\"Client\" WHERE client_service_id=%s", (service_id,))
             result = cur.fetchone()
         return result
 
@@ -62,7 +63,8 @@ class DataBaseManager:
 
     def get_skills(self, master_id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT skill_type, skill_description"
-                        "FROM public.\"Skill\" WHERE master_id=%s", master_id)
+            cur.execute("SELECT skill_type, skill_description "
+                        "FROM public.\"Skill\" WHERE master_id=%s", (master_id,))
             result = cur.fetchall()
+            print(result)
         return result

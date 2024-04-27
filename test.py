@@ -1,18 +1,23 @@
 from requests import *
 
 check_login_json = {
-    "login": "dig"
+    "login": "dota6"
 }
 register_json = {
-    "login": "dig",
-    "password": "pupa",
-    "role": "client",
+    "login" : "memos",
+    "password" : "pupa",
+    "role": "master",
     "fullname": "abobchik",
-    "email": "aboba@mail.ru",
-    "phone": "88005553535",
+    "email" : "aboba@mail.ru",
+    "phone" : "88005553535",
+    "about_me": "gay",
+    "skills" : {
+        "dota": "5",
+        "sex": "0"
+    }
 }
 login_json = {
-    "login": "dig",
+    "login": "memos",
     "password": "pupa"
 }
 
