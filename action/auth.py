@@ -76,6 +76,9 @@ class Auth:
     def register(self, userdata: RegisterData):
         if not self.check_login_exists(userdata):
             self.DB_manager.create_service_data(userdata)
-            self.DB_manager.create_client_profile(userdata)
+            if userdata.role == "master":
+                self.DB_manager.create_master_profile(userdata)
+            else:
+                self.DB_manager.create_client_profile(userdata)
             return RegisterResult.Accept
         return RegisterResult.Decline

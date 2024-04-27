@@ -16,8 +16,9 @@ class DataBaseManager:
     def create_service_data(self, userdata: RegisterData):
         with self.conn.cursor() as cur:
             cur.execute("INSERT INTO public.\"Service_data\"( service_data_login, service_data_password,"
-                        "service_data_role) VALUES (%s, %s, %s) RETURNING service_data_id", (userdata.username, userdata.password, userdata.role))
-            userdata.service_data_id = cur.fetchone()[0]
+                        "service_data_role) VALUES (%s, %s, %s) RETURNING service_data_id",
+                        (userdata.username, userdata.password, userdata.role))
+            userdata.add_service_data_id(cur.fetchone()[0])
             self.conn.commit()
 
     def create_client_profile(self, userdata: RegisterData):
@@ -25,6 +26,17 @@ class DataBaseManager:
             cur.execute("INSERT INTO public.\"Client\" (client_full_name, client_email, client_phone, "
                         "client_service_id) VALUES (%s, %s, %s, %s)",
                         (userdata.fullname, userdata.email, userdata.phone, userdata.service_data_id))
+            self.conn.commit()
+
+    def create_master_profile(self, userdata: RegisterData):
+        with self.conn.cursor() as cur:
+            cur.execute("INSERT INTO public.\"Master\"(master_full_name, master_email, master_phone, "
+                        "master_detailed_info, master_service_id) VALUES (%s, %s, %s, %s) RETURNING master_id",
+                        (userdata.fullname, userdata.email, userdata.phone, userdata.about, userdata.service_data_id))
+            userdata.add_master_id(cur.fetchone()[0])
+            cur.execute("INSERT INTO public.\"Skill\"(master_id, skill_type, skill_description) "
+                        "VALUES " + ",".join(["(%s, %s, %s)"]*len(userdata.skills)),
+                        userdata.get_skill_tuples())
             self.conn.commit()
 
     def get_service_id(self, username):
