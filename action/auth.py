@@ -68,13 +68,13 @@ class Auth:
         date = datetime.strptime(jwt_data.date, "%d/%m/%Y/%H/%M/%S")
         return jwt_data, JwtCheckResult.Verified
 
-    def check_login_exists(self, userdata: CheckLogin):
+    def check_login_exists(self, userdata: [CheckLogin, RegisterData]):
         user_card = self.DB_manager.find_account(userdata.username)
         print(f"Verified user {userdata.username} existence with result {bool(user_card)}")
         return bool(user_card)
 
     def register(self, userdata: RegisterData):
-        if not self.check_login_exists(userdata.username):
+        if not self.check_login_exists(userdata):
             self.DB_manager.create_service_data(userdata)
             self.DB_manager.create_client_profile(userdata)
             return RegisterResult.Accept

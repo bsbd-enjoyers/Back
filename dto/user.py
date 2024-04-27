@@ -21,7 +21,7 @@ class UserInfo(ResponsePrototype):
             self.skills[skill[0]] = skill[1]
 
     def get_dict(self):
-        if not self.skills:
-            self.__dict__.pop('id')
-            return self.__dict__
-        raise ValueError(f"Empty skills for master {self.fullname}")
+        if self.role == "master" and not self.skills:
+            raise ValueError(f"Empty skills for master {self.fullname}")
+        self.__dict__.pop('id')
+        return self.__dict__

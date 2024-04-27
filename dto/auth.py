@@ -11,7 +11,7 @@ class AuthData(DataPrototype):
 
 class RegisterData(DataPrototype):
     def __init__(self, userdata):
-        self.service_data_id = None
+        self.service_data_id = "empty"
         self.username = userdata.get("login")
         self.password = userdata.get("password")
         self.fullname = userdata.get("fullname")
@@ -23,6 +23,9 @@ class RegisterData(DataPrototype):
             self.about = userdata.get("")
         self.check_empty()
         self.password = sha512_crypt.hash(self.password)
+
+    def add_service_data_id(self, service_data_id: int):
+        self.service_data_id = service_data_id
 
 
 class CheckLogin(DataPrototype):
