@@ -31,19 +31,19 @@ class Auth:
         self.DB_manager = dbmanager
         pass
 
-    def login(self, userdata: AuthData) -> AuthResult:
+    def login(self, userdata: AuthData):
         user_card = self.DB_manager.find_account(userdata.username)  # (login, pass, auth_id)
 
         if not user_card:
             print(f"No such user: {userdata.username}")
-            return AuthResult.NotFound
+            return None, AuthResult.NotFound
 
         if not sha512_crypt.verify(userdata.password, user_card[1]):
             print(f"Wrong Password for user {userdata.username}")
-            return AuthResult.WrongData
+            return None, AuthResult.WrongData
 
         print(f"Auth Success for user {userdata.username}")
-        return AuthResult.Accept
+        return self.gen_jwt(user_card[0], user_card[2]), AuthResult.Accept
 
     @staticmethod
     def gen_jwt(username, role) -> str:
@@ -55,7 +55,7 @@ class Auth:
     @staticmethod
     def check_jwt(jwt_token):
         try:
-            jwt_data = jwt.decode(jwt_token, JWT_SECRET, algorithms="HS256")
+            jwt_data = jwt.decode(jwt_token, JWT_SECRET, algorithms=["HS256"])
         except jwt.exceptions.InvalidSignatureError:
             return None, JwtCheckResult.BadSignature
 

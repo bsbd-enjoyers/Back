@@ -4,12 +4,19 @@ from action.auth import Auth, AuthResult, RegisterResult, JwtCheckResult
 from action.provide import Provide
 from dto.auth import *
 from dto import SimpleResult
-from config import POSTGRESQL_LOGIN
+from config import POSTGRESQL_LOGIN, JWT_SECRET
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
 db_manager = DataBaseManager(POSTGRESQL_LOGIN)
 auth = Auth(db_manager)
 provide = Provide(db_manager)
+
+app.config["JWT_SECRET_KEY"] = JWT_SECRET
+jwt = JWTManager(app)
+
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
@@ -21,10 +28,12 @@ def login():
             print(e)
             return "Bad Json", 400
 
-        resp = make_response()
+        resp = jsonify(SimpleResult(False).get_dict())
 
-        if auth.login(auth_class) == AuthResult.Accept:
-            resp.set_cookie("AuthTokenJWT", value=auth.gen_jwt(auth_class.username, "client"))
+        token, result = auth.login(auth_class)
+        if result == AuthResult.Accept:
+            resp = jsonify(SimpleResult(True).get_dict())
+            resp.set_cookie("AuthTokenJWT", value=token)
 
         return resp, 200
 

@@ -3,3 +3,4 @@ PyJWT
 flask
 passlib
 requests
+flask-jwt-extended
