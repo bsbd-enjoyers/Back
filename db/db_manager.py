@@ -1,17 +1,9 @@
 import psycopg2 as postgresql
-from config import POSTGRESQL_LOGIN
 
 
 class DataBaseManager:
     def __init__(self, creds):
         self.conn = postgresql.connect(**creds)
-
-    def find_client(self, username):  # deprecated
-        with self.conn.cursor() as cur:
-            cur.execute("SELECT client_id, client_full_name, client_email, client_phone, client_login FROM "
-                        "public.\"Client\" WHERE client_login=%s", (username,))
-            result = cur.fetchone()
-        return result
 
     def find_account(self, username):
         with self.conn.cursor() as cur:
@@ -26,9 +18,30 @@ class DataBaseManager:
                         "service_data_role) VALUES (%s, %s, %s)", (username, password, role))
             self.conn.commit()
 
-    def select_all(self):
+    def get_service_id(self, username):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT * FROM public.\"Service_data\""
-                        "ORDER BY service_data_id ASC")
+            cur.execute("SELECT service_data_id"
+                        " FROM public.\"Service_data\" WHERE service_data_login=%s", (username,))
+            result = cur.fetchone()
+        return result
+
+    def get_client(self, service_id):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT client_id, client_full_name, client_email, client_phone"
+                        "FROM public.\"Client\" WHERE client_service_id=%s", service_id)
+            result = cur.fetchone()
+        return result
+
+    def get_master(self, service_id):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT master_id, master_full_name, master_email, master_phone, master_detailed_info"
+                        "FROM public.\"Master\" WHERE master_service_id=%s", service_id)
+            result = cur.fetchone()
+        return result
+
+    def get_skills(self, master_id):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT skill_type, skill_description"
+                        "FROM public.\"Skill\" WHERE master_id=%s", master_id)
             result = cur.fetchall()
         return result

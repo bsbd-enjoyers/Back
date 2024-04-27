@@ -5,18 +5,17 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS public."Client"
 (
-    client_id bigint NOT NULL,
+    client_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     client_full_name character varying(50) COLLATE pg_catalog."default",
     client_email character varying(30) COLLATE pg_catalog."default",
     client_phone character varying(30) COLLATE pg_catalog."default",
-    client_login character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    CONSTRAINT "Client_pkey" PRIMARY KEY (client_id),
-    CONSTRAINT client_login UNIQUE (client_login)
+    client_service_id bigint NOT NULL,
+    CONSTRAINT "Client_pkey" PRIMARY KEY (client_id)
 );
 
 CREATE TABLE IF NOT EXISTS public."Document"
 (
-    document_id bigint NOT NULL,
+    document_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     order_id bigint NOT NULL,
     document_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
     document_content bytea NOT NULL,
@@ -25,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public."Document"
 
 CREATE TABLE IF NOT EXISTS public."Feedback"
 (
-    feedback_id bigint NOT NULL,
+    feedback_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     master_id bigint NOT NULL,
     client_id bigint NOT NULL,
     feedback_score smallint NOT NULL,
@@ -35,19 +34,18 @@ CREATE TABLE IF NOT EXISTS public."Feedback"
 
 CREATE TABLE IF NOT EXISTS public."Master"
 (
-    master_id bigint NOT NULL,
+    master_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     master_full_name character varying(50) COLLATE pg_catalog."default",
     master_email character varying(30) COLLATE pg_catalog."default",
     master_phone character varying(30) COLLATE pg_catalog."default",
-    master_login character varying(30) COLLATE pg_catalog."default" NOT NULL,
     master_detailed_info text COLLATE pg_catalog."default",
-    CONSTRAINT "Master_pkey" PRIMARY KEY (master_id),
-    CONSTRAINT master_login UNIQUE (master_login)
+    master_service_id bigint NOT NULL,
+    CONSTRAINT "Master_pkey" PRIMARY KEY (master_id)
 );
 
 CREATE TABLE IF NOT EXISTS public."Order"
 (
-    order_id bigint NOT NULL,
+    order_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     client_id bigint NOT NULL,
     master_id bigint NOT NULL,
     product_id bigint NOT NULL,
@@ -59,7 +57,7 @@ CREATE TABLE IF NOT EXISTS public."Order"
 
 CREATE TABLE IF NOT EXISTS public."Product"
 (
-    product_id bigint NOT NULL,
+    product_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     product_type character varying(30) COLLATE pg_catalog."default" NOT NULL,
     product_full_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
     product_client_description text COLLATE pg_catalog."default" NOT NULL,
@@ -69,9 +67,9 @@ CREATE TABLE IF NOT EXISTS public."Product"
 
 CREATE TABLE IF NOT EXISTS public."Service_data"
 (
-    service_data_id bigint NOT NULL,
+    service_data_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     service_data_login character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    service_data_password character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    service_data_password character varying(256) COLLATE pg_catalog."default" NOT NULL,
     service_data_role character varying(30) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT "Service_data_pkey" PRIMARY KEY (service_data_id),
     CONSTRAINT service_data_login UNIQUE (service_data_login)
@@ -79,12 +77,20 @@ CREATE TABLE IF NOT EXISTS public."Service_data"
 
 CREATE TABLE IF NOT EXISTS public."Skill"
 (
-    skill_id bigint NOT NULL,
+    skill_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     master_id bigint NOT NULL,
     skill_type character varying(50) COLLATE pg_catalog."default" NOT NULL,
     skill_description text COLLATE pg_catalog."default",
     CONSTRAINT "Skill_pkey" PRIMARY KEY (skill_id)
 );
+
+ALTER TABLE IF EXISTS public."Client"
+    ADD CONSTRAINT "client_service-id" FOREIGN KEY (client_service_id)
+    REFERENCES public."Service_data" (service_data_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+
 
 ALTER TABLE IF EXISTS public."Document"
     ADD CONSTRAINT order_id FOREIGN KEY (order_id)
@@ -110,6 +116,14 @@ ALTER TABLE IF EXISTS public."Feedback"
     NOT VALID;
 
 
+ALTER TABLE IF EXISTS public."Master"
+    ADD CONSTRAINT master_service_id FOREIGN KEY (master_service_id)
+    REFERENCES public."Service_data" (service_data_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
+
+
 ALTER TABLE IF EXISTS public."Order"
     ADD CONSTRAINT client_id FOREIGN KEY (client_id)
     REFERENCES public."Client" (client_id) MATCH SIMPLE
@@ -129,26 +143,6 @@ ALTER TABLE IF EXISTS public."Order"
     REFERENCES public."Product" (product_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
-
-
-ALTER TABLE IF EXISTS public."Service_data"
-    ADD CONSTRAINT client_login FOREIGN KEY (service_data_login)
-    REFERENCES public."Client" (client_login) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS service_data_login
-    ON public."Service_data"(service_data_login);
-
-
-ALTER TABLE IF EXISTS public."Service_data"
-    ADD CONSTRAINT master_login FOREIGN KEY (service_data_login)
-    REFERENCES public."Master" (master_login) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-CREATE INDEX IF NOT EXISTS service_data_login
-    ON public."Service_data"(service_data_login);
 
 
 ALTER TABLE IF EXISTS public."Skill"
