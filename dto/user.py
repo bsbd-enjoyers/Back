@@ -1,4 +1,5 @@
 from dto.prototypes import ResponsePrototype
+from dto.auth import Role
 
 
 class UserInfo(ResponsePrototype):

@@ -1,5 +1,5 @@
 from enum import Enum
-from dto.auth import AuthData, CheckLogin, RegisterData, JwtData
+from dto.auth import AuthData, CheckLogin, RegisterData, JwtData, Role
 from passlib.hash import sha512_crypt
 from datetime import datetime
 import jwt
@@ -53,7 +53,7 @@ class Auth:
         return jwt_token
 
     @staticmethod
-    def check_jwt(jwt_token):
+    def check_jwt(jwt_token) -> (JwtData, JwtCheckResult):
         try:
             jwt_data = jwt.decode(jwt_token, JWT_SECRET, algorithms=["HS256"])
         except jwt.exceptions.InvalidSignatureError:
@@ -76,9 +76,12 @@ class Auth:
     def register(self, userdata: RegisterData):
         if not self.check_login_exists(userdata):
             self.DB_manager.create_service_data(userdata)
-            if userdata.role == "master":
+            if userdata.role == Role.Master:
                 self.DB_manager.create_master_profile(userdata)
             else:
                 self.DB_manager.create_client_profile(userdata)
             return RegisterResult.Accept
         return RegisterResult.Decline
+
+    def dropsession(self, jwt_data):
+        pass

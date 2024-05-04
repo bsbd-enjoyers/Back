@@ -17,7 +17,7 @@ class DataBaseManager:
         with self.conn.cursor() as cur:
             cur.execute("INSERT INTO public.\"Service_data\"( service_data_login, service_data_password,"
                         "service_data_role) VALUES (%s, %s, %s) RETURNING service_data_id",
-                        (userdata.username, userdata.password, userdata.role))
+                        (userdata.username, userdata.password, userdata.role.value))
             userdata.add_service_data_id(cur.fetchone()[0])
             self.conn.commit()
 
@@ -44,7 +44,7 @@ class DataBaseManager:
         with self.conn.cursor() as cur:
             cur.execute("SELECT service_data_id"
                         " FROM public.\"Service_data\" WHERE service_data_login=%s", (username,))
-            result = cur.fetchone()
+            result = cur.fetchone()[0]
         return result
 
     def get_client(self, service_id):
@@ -57,7 +57,7 @@ class DataBaseManager:
     def get_master(self, service_id):
         with self.conn.cursor() as cur:
             cur.execute("SELECT master_id, master_full_name, master_email, master_phone, master_detailed_info "
-                        "FROM public.\"Master\" WHERE master_service_id=%s", service_id)
+                        "FROM public.\"Master\" WHERE master_service_id=%s", (service_id,))
             result = cur.fetchone()
         return result
 

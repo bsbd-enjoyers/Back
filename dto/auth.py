@@ -1,7 +1,19 @@
 from dto.prototypes import DataPrototype
 from passlib.hash import sha512_crypt
+from enum import Enum
 
-ROLES = {"client": "client", "master": "master"}
+
+class Role(Enum):
+    Master = "master"
+    Client = "client"
+
+    @staticmethod
+    def get(value):
+        try:
+            role = Role(value)
+        except ValueError:
+            return None
+        return role
 
 
 class AuthData(DataPrototype):
@@ -17,10 +29,10 @@ class RegisterData(DataPrototype):
         self.username = userdata.get("login")
         self.password = userdata.get("password")
         self.fullname = userdata.get("fullname")
-        self.role = ROLES.get(userdata.get("role"))
+        self.role = Role.get(userdata.get("role"))
         self.email = userdata.get("email")
         self.phone = userdata.get("phone")
-        if self.role == "master":
+        if self.role == Role.Master:
             self.skills = userdata.get("skills")
             self.about = userdata.get("about_me")
             self.master_id = "empty"
@@ -49,5 +61,5 @@ class JwtData(DataPrototype):
     def __init__(self, jwt_dict):
         self.username = jwt_dict.get("username")
         self.date = jwt_dict.get("date")
-        self.role = jwt_dict.get("role")
+        self.role = Role.get(jwt_dict.get("role"))
         self.check_empty()
