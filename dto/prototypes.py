@@ -1,4 +1,4 @@
-from flask import json
+from flask import jsonify
 
 
 class DataPrototype:
@@ -9,5 +9,5 @@ class DataPrototype:
 
 
 class ResponsePrototype:
-    def get_dict(self):
-        return self.__dict__
+    def response(self):
+        return jsonify(self.__dict__)

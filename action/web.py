@@ -21,12 +21,12 @@ class Web:
             jwt_token = self.get_jwt_token()
 
             if jwt_token is None:
-                return jsonify(SimpleMsg("No token").get_dict()), 403
+                return SimpleMsg("No token").response(), 403
 
             jwt_data, check_result = self.auth.check_jwt(jwt_token)
             print(f"Cookies checked with result {check_result}")
             if check_result != JwtCheckResult.Verified:
-                return jsonify(SimpleMsg("Bad Token").get_dict()), 403
+                return SimpleMsg("Bad Token").response(), 403
             response = request_handler(jwt_data)
             return response
 

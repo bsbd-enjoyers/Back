@@ -24,13 +24,13 @@ def login():
         auth_class = AuthData(login_json)
     except ValueError as e:
         print(e)
-        return jsonify(SimpleMsg("Bad Json").get_dict()), 400
+        return SimpleMsg("Bad Json").response(), 400
 
-    resp = jsonify(SimpleResult(False).get_dict())
+    resp = SimpleResult(False).response()
 
     token, result = auth.login(auth_class)
     if result == AuthResult.Accept:
-        resp = jsonify(SimpleResult(True).get_dict())
+        resp = SimpleResult(True).response()
         resp.set_cookie("AuthTokenJWT", value=token)
 
     return resp, 200
@@ -44,13 +44,13 @@ def check_login():
         check_login_class = CheckLogin(login_json)
     except ValueError as e:
         print(e)
-        return jsonify(SimpleMsg("Bad Json").get_dict()), 400
+        return SimpleMsg("Bad Json").response(), 400
 
     # print(login_json)
     if auth.check_login_exists(check_login_class):
-        return jsonify(SimpleResult(True).get_dict()), 200
+        return SimpleResult(True).response(), 200
 
-    return jsonify(SimpleResult(False).get_dict()), 200
+    return SimpleResult(False).response(), 200
 
 
 @app.route("/search", methods=["POST"])
@@ -68,14 +68,14 @@ def orders(jwt_data):
             order, status = Order.create(jwt_data, request.get_json())
         except ValueError as e:
             print(e)
-            return jsonify(SimpleMsg("Bad Json").get_dict()), 400
+            return SimpleMsg("Bad Json").response(), 400
 
         if status != OrderRegister.Registered:
-            return jsonify(SimpleMsg(status.value).get_dict()), 400
+            return SimpleMsg(status.value).response(), 400
 
         update.add_order(order)
 
-        return jsonify(SimpleMsg(status.value).get_dict()), 200
+        return SimpleMsg(status.value).response(), 200
 
     return "cool", 200  # TODO: do orders first
 
@@ -84,11 +84,13 @@ def orders(jwt_data):
 @web.check_jwt
 def session(jwt_data):
     if request.method == "GET":
-        return jsonify(provide.get_userinfo(jwt_data).get_dict()), 200
+        return provide.get_userinfo(jwt_data).response(), 200
 
     if request.method == "POST":
-        auth.dropsession(jwt_data)
+        auth.drop_session(jwt_data)
         return "cool", 200  # TODO: then session
+
+    return "Bad Request", 400
 
 
 @app.route('/register', methods=["POST"])
@@ -99,12 +101,12 @@ def register():
         register_class = RegisterData(register_json)
     except ValueError as e:
         print(e)
-        return jsonify(SimpleMsg("Bad Json").get_dict()), 400
+        return SimpleMsg("Bad Json").response(), 400
 
     if auth.register(register_class) == RegisterResult.Accept:
-        return jsonify(SimpleResult(True).get_dict())
+        return SimpleResult(True).response(), 200
 
-    return jsonify(SimpleResult(False).get_dict())
+    return SimpleResult(False).response(), 200
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 from enum import Enum
 from dto.auth import AuthData, CheckLogin, RegisterData, JwtData, Role
 from passlib.hash import sha512_crypt
-from datetime import datetime
+import time
 import jwt
 
 from config import JWT_SECRET
@@ -47,13 +47,11 @@ class Auth:
 
     @staticmethod
     def gen_jwt(username, role) -> str:
-        now = datetime.now()
-        date_string = now.strftime("%d/%m/%Y/%H/%M/%S")
-        jwt_token = jwt.encode({"username": username, "date": date_string, "role": role}, JWT_SECRET, algorithm="HS256")
+        jwt_token = jwt.encode({"username": username, "date": round(time.time()), "role": role},
+                               JWT_SECRET, algorithm="HS256")
         return jwt_token
 
-    @staticmethod
-    def check_jwt(jwt_token) -> (JwtData, JwtCheckResult):
+    def check_jwt(self, jwt_token) -> (JwtData, JwtCheckResult):
         try:
             jwt_data = jwt.decode(jwt_token, JWT_SECRET, algorithms=["HS256"])
         except jwt.exceptions.InvalidSignatureError:
@@ -64,8 +62,12 @@ class Auth:
             jwt_data = JwtData(jwt_data)
         except ValueError:
             return None, JwtCheckResult.BadFields
+        now = time.time()
 
-        date = datetime.strptime(jwt_data.date, "%d/%m/%Y/%H/%M/%S")  # TODO: CHECK DATE
+        if not (0 < now - jwt_data.date < 86400):
+            self.drop_session(jwt_token)
+            return None, JwtCheckResult.Expired
+
         return jwt_data, JwtCheckResult.Verified
 
     def check_login_exists(self, userdata: [CheckLogin, RegisterData]):
@@ -83,5 +85,5 @@ class Auth:
             return RegisterResult.Accept
         return RegisterResult.Decline
 
-    def dropsession(self, jwt_data):
+    def drop_session(self, jwt_token):
         pass

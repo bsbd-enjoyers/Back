@@ -1,5 +1,6 @@
 from dto.prototypes import ResponsePrototype
 from dto.auth import Role
+from flask import jsonify
 
 
 class UserInfo(ResponsePrototype):
@@ -21,8 +22,8 @@ class UserInfo(ResponsePrototype):
         for skill in skill_tuple:
             self.skills[skill[0]] = skill[1]
 
-    def get_dict(self):
+    def response(self):
         if self.role == "master" and not self.skills:
             raise ValueError(f"Empty skills for master {self.fullname}")
         self.__dict__.pop('id')
-        return self.__dict__
+        return jsonify(self.__dict__)
