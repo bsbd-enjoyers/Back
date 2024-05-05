@@ -33,7 +33,7 @@ class Auth:
 
     def login(self, userdata: AuthData):
         service_card = self.DB_manager.find_account(userdata.username)  # (service_data_login, service_data_password, service_data_role, service_data_id)
-        client_card = self.DB_manager.get_client(service_card[-1])
+        client_card = self.DB_manager.get_client(userdata.username)
 
         if not service_card:
             print(f"No such user: {userdata.username}")
@@ -63,9 +63,9 @@ class Auth:
             jwt_data = JwtData(jwt_data)
         except ValueError:
             return None, JwtCheckResult.BadFields
-        now = time.time()
-
-        if not (0 < now - jwt_data.date < 86400):
+        now = round(time.time())
+        # print(f"Now {now}, JWT {jwt_data.date}, Res {now - jwt_data.date}")
+        if not (0 <= now - jwt_data.date < 86400):
             self.drop_session(jwt_token)
             return None, JwtCheckResult.Expired
 

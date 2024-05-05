@@ -1,10 +1,10 @@
 from requests import *
 
 check_login_json = {
-    "login": "gibuga"
+    "login": "ganda"
 }
 register_json = {
-    "login": "gibuga",
+    "login": "ganda",
     "password": "pupa",
     "role": "client",
     "fullname": "abobchik",
@@ -17,7 +17,7 @@ register_json = {
     }
 }
 login_json = {
-    "login": "gibuga",
+    "login": "ganda",
     "password": "pupa"
 }
 
@@ -71,7 +71,7 @@ def add_order(data, s):
 
 
 s = Session()
-#check_login(check_login_json, s)
-#register(register_json, s)
+check_login(check_login_json, s)
+register(register_json, s)
 login(login_json, s)
 add_order(order_json, s)

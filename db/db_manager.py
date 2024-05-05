@@ -49,24 +49,31 @@ class DataBaseManager:
             result = cur.fetchone()[0]
         return result
 
-    def get_client(self, service_id):
+    def get_client(self, username):
         with self.conn.cursor() as cur:
             cur.execute("SELECT client_id, client_full_name, client_email, client_phone "
-                        "FROM public.\"Client\" WHERE client_service_id=%s", (service_id,))
+                        "FROM public.\"Client\" JOIN public.\"Service_data\" ON "
+                        "public.\"Service_data\".service_data_id=public.\"Client\".client_service_id Where "
+                        "service_data_login=%s", (username,))
             result = cur.fetchone()
         return result
 
-    def get_master(self, service_id):
+    def get_master(self, username):
         with self.conn.cursor() as cur:
             cur.execute("SELECT master_id, master_full_name, master_email, master_phone, master_detailed_info "
-                        "FROM public.\"Master\" WHERE master_service_id=%s", (service_id,))
+                        "FROM public.\"Master\" JOIN public.\"Service_data\" ON "
+                        "public.\"Service_data\".service_data_id=public.\"Master\".master_service_id Where "
+                        "service_data_login=%s",
+                        (username,))
             result = cur.fetchone()
         return result
 
     def get_client_orders(self, client_id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT order_id, order_deadline, order_totalcost, order_status "
-                        "FROM public.\"Order\" WHERE client_id=%s", (client_id,))
+            cur.execute("SELECT order_id, order_deadline, order_totalcost, order_status, product_full_name, "
+                        "product_client_description, product_master_specification FROM public.\"Order\" JOIN "
+                        "public.\"Product\" ON public.\"Order\".product_id=public.\"Product\".product_id WHERE "
+                        "client_id=%s", (client_id,))
             result = cur.fetchall()
         return result
 
