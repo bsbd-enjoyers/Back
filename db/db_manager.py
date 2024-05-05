@@ -77,6 +77,15 @@ class DataBaseManager:
             result = cur.fetchall()
         return result
 
+    def get_master_orders(self, master_id):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT order_id, order_deadline, order_totalcost, order_status, product_full_name, "
+                        "product_client_description, product_master_specification FROM public.\"Order\" JOIN "
+                        "public.\"Product\" ON public.\"Order\".product_id=public.\"Product\".product_id WHERE "
+                        "master_id=%s", (master_id,))
+            result = cur.fetchall()
+        return result
+
     def create_order(self, order: Order):
         pass
 

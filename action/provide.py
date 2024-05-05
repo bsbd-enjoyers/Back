@@ -26,12 +26,13 @@ class Provide:
 
         return userinfo
 
-    def get_orders(self, jwt_data: JwtData) -> Orders:
+    def get_orders(self, jwt_data: JwtData) -> Orders: # TODO handle admin
         if jwt_data.role == Role.Client:
             orders = Orders(self.DB_manager.get_client_orders(jwt_data.id))
             return orders
         if jwt_data.role == Role.Master:
-            return Orders(())
+            orders = Orders(self.DB_manager.get_master_orders(jwt_data.id))
+            return orders
 
     def search(self, query: Query):
         pass
