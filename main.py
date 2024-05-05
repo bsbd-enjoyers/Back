@@ -3,9 +3,9 @@ from db.db_manager import DataBaseManager
 from action.auth import Auth, AuthResult, RegisterResult
 from action.provide import Provide
 from action.web import Web
-from action.update import Update
+from action.update import Update, OrderRegister
 from dto.auth import *
-from dto.order import Order, OrderRegister
+from dto.order import Order
 from dto.simple import SimpleResult, SimpleMsg, Query
 from config import POSTGRESQL_LOGIN
 
