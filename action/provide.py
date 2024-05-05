@@ -11,7 +11,7 @@ class Provide:
 
     def get_userinfo(self, jwt_data: JwtData) -> UserInfo:
         # service_id = self.DB_manager.get_service_id(jwt_data.username)
-        userinfo = None  # что будет если нет товарища в бд?
+        userinfo = None  # что будет если нет товарища в бд? ToDO: Handle admin
         # print(jwt_data.role, service_id)
         if jwt_data.role == Role.Client:
             userinfo = self.DB_manager.get_client(jwt_data.username)

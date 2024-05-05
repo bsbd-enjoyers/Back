@@ -71,15 +71,15 @@ def orders(jwt_data: JwtData):
     if request.method == "POST":
 
         try:
-            order, status = Order.create(jwt_data, request.get_json())
+            order = Order(jwt_data, request.get_json())
         except ValueError as e:
             print(e)
             return SimpleMsg("Bad Json").response(), 400
 
+        status = update.add_order(order)
+
         if status != OrderRegister.Registered:
             return SimpleMsg(status.value).response(), 400
-
-        update.add_order(order)
 
         return SimpleMsg(status.value).response(), 200
 

@@ -8,7 +8,7 @@ class Web:
         self.auth = auth
 
     @staticmethod
-    def get_jwt_token():
+    def __get_jwt_token():
         token = request.headers.get("Cookie")
         if token is None:
             return None
@@ -18,7 +18,7 @@ class Web:
 
     def check_jwt(self, request_handler):
         def wrapper(*args, **kwargs):
-            jwt_token = self.get_jwt_token()
+            jwt_token = self.__get_jwt_token()
 
             if jwt_token is None:
                 return SimpleMsg("No token").response(), 403
