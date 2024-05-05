@@ -1,13 +1,13 @@
-from flask import Flask, request, make_response, jsonify
+from flask import Flask, request
 from db.db_manager import DataBaseManager
-from action.auth import Auth, AuthResult, RegisterResult, JwtCheckResult
+from action.auth import Auth, AuthResult, RegisterResult
 from action.provide import Provide
 from action.web import Web
 from action.update import Update
 from dto.auth import *
 from dto.order import Order, OrderRegister
-from dto.simple import SimpleResult, SimpleMsg
-from config import POSTGRESQL_LOGIN, JWT_SECRET
+from dto.simple import SimpleResult, SimpleMsg, Query
+from config import POSTGRESQL_LOGIN
 
 app = Flask(__name__)
 db_manager = DataBaseManager(POSTGRESQL_LOGIN)
@@ -55,13 +55,19 @@ def check_login():
 
 @app.route("/search", methods=["POST"])
 @web.check_jwt
-def search():
+def search(jwt_data):
+    try:
+        query = Query(request.get_json())
+    except ValueError as e:
+        print(e)
+        return SimpleMsg("Should query field with 4 characters long query").response(), 400
+
     return "cool", 200  # TODO: then then search
 
 
 @app.route("/orders", methods=["GET", "POST"])
 @web.check_jwt
-def orders(jwt_data):
+def orders(jwt_data: JwtData):
     if request.method == "POST":
 
         try:
@@ -76,6 +82,10 @@ def orders(jwt_data):
         update.add_order(order)
 
         return SimpleMsg(status.value).response(), 200
+
+    if request.method == "GET":
+        order_records = provide.get_orders(jwt_data)
+        return order_records.response()
 
     return "cool", 200  # TODO: do orders first
 

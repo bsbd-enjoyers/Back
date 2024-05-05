@@ -1,5 +1,6 @@
 import psycopg2 as postgresql
 from dto.auth import RegisterData
+from dto.order import Order
 
 
 class DataBaseManager:
@@ -8,7 +9,7 @@ class DataBaseManager:
 
     def find_account(self, username):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT service_data_login, service_data_password, service_data_role"
+            cur.execute("SELECT service_data_login, service_data_password, service_data_role, service_data_id"
                         " FROM public.\"Service_data\" WHERE service_data_login=%s", (username,))
             result = cur.fetchone()
         return result
@@ -34,9 +35,10 @@ class DataBaseManager:
                         "master_detailed_info, master_service_id) VALUES (%s, %s, %s, %s, %s) RETURNING master_id",
                         (userdata.fullname, userdata.email, userdata.phone, userdata.about, userdata.service_data_id))
             userdata.add_master_id(cur.fetchone()[0])
-            print("INSERT INTO public.\"Skill\"(master_id, skill_type, skill_description) VALUES " + ",".join([""]*len(userdata.skills)))
+            print("INSERT INTO public.\"Skill\"(master_id, skill_type, skill_description) VALUES " + ",".join(
+                [""] * len(userdata.skills)))
             cur.execute("INSERT INTO public.\"Skill\"(master_id, skill_type, skill_description) "
-                        "VALUES " + ",".join(["%s"]*len(userdata.skills)),
+                        "VALUES " + ",".join(["%s"] * len(userdata.skills)),
                         userdata.get_skill_tuples())
             self.conn.commit()
 
@@ -60,6 +62,16 @@ class DataBaseManager:
                         "FROM public.\"Master\" WHERE master_service_id=%s", (service_id,))
             result = cur.fetchone()
         return result
+
+    def get_client_orders(self, client_id):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT order_id, order_deadline, order_totalcost, order_status "
+                        "FROM public.\"Order\" WHERE client_id=%s", (client_id,))
+            result = cur.fetchall()
+        return result
+
+    def create_order(self, order: Order):
+        pass
 
     def get_skills(self, master_id):
         with self.conn.cursor() as cur:

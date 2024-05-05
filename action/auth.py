@@ -32,22 +32,23 @@ class Auth:
         pass
 
     def login(self, userdata: AuthData):
-        user_card = self.DB_manager.find_account(userdata.username)  # (login, pass, auth_id)
+        service_card = self.DB_manager.find_account(userdata.username)  # (service_data_login, service_data_password, service_data_role, service_data_id)
+        client_card = self.DB_manager.get_client(service_card[-1])
 
-        if not user_card:
+        if not service_card:
             print(f"No such user: {userdata.username}")
             return None, AuthResult.NotFound
 
-        if not sha512_crypt.verify(userdata.password, user_card[1]):
+        if not sha512_crypt.verify(userdata.password, service_card[1]):
             print(f"Wrong Password for user {userdata.username}")
             return None, AuthResult.WrongData
 
         print(f"Auth Success for user {userdata.username}")
-        return self.gen_jwt(user_card[0], user_card[2]), AuthResult.Accept
+        return self.gen_jwt(service_card[0], service_card[2], client_card[0]), AuthResult.Accept
 
     @staticmethod
-    def gen_jwt(username, role) -> str:
-        jwt_token = jwt.encode({"username": username, "date": round(time.time()), "role": role},
+    def gen_jwt(username, role, user_id) -> str:
+        jwt_token = jwt.encode({"username": username, "date": round(time.time()), "role": role, "id": user_id},
                                JWT_SECRET, algorithm="HS256")
         return jwt_token
 

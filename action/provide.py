@@ -1,6 +1,8 @@
 from db.db_manager import DataBaseManager
 from dto.auth import JwtData, Role
 from dto.user import UserInfo
+from dto.simple import Query
+from dto.order import Orders
 
 
 class Provide:
@@ -24,5 +26,12 @@ class Provide:
 
         return userinfo
 
-    def get_client_orders(self):
+    def get_orders(self, jwt_data: JwtData) -> Orders:
+        if jwt_data.role == Role.Client:
+            orders = Orders(self.DB_manager.get_client_orders(jwt_data.id))
+            return orders
+        if jwt_data.role == Role.Master:
+            return Orders(())
+
+    def search(self, query: Query):
         pass
