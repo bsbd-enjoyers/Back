@@ -109,9 +109,11 @@ def orders(jwt_data: JwtData):
 
     if request.method == "GET":
         order_records, result = provide.get_orders(jwt_data)
+
         if result == GetResult.Fail:
             SimpleMsg("Bad Request").response(), 400
-        return order_records.response()
+
+        return order_records.response(), 200
 
     return "cool", 200  # TODO: do orders first
 

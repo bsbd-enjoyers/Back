@@ -39,6 +39,7 @@ class Provide:
             orders, result = self.DB_manager.get_client_orders(jwt_data.id)
         else:
             orders, result = self.DB_manager.get_master_orders(jwt_data.id)
+        print(f"Account {jwt_data.username} requested orders with status {result}")
         if result == QueryResult.Fail:
             return None, GetResult.Fail
         orders = Orders(orders)
