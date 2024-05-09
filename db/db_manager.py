@@ -98,7 +98,7 @@ class DataBaseManager:
     @handle_sql_query
     def get_client_orders(self, client_id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT order_id, order_deadline, master_id, client_id, client_order_cost, master_order_cost, "
+            cur.execute("SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, "
                         "order_status, product_name, product_type, product_client_description, "
                         "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON "
                         "public.\"Order\".product_id=public.\"Product\".product_id WHERE client_id=%s", (client_id,))
@@ -108,7 +108,7 @@ class DataBaseManager:
     @handle_sql_query
     def get_master_orders(self, master_id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT order_id, order_deadline, master_id, client_id, client_order_cost, master_order_cost, "
+            cur.execute("SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, "
                         "order_status, product_name, product_type, product_client_description, "
                         "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON "
                         "public.\"Order\".product_id=public.\"Product\".product_id WHERE master_id=%s", (master_id,))
@@ -123,7 +123,7 @@ class DataBaseManager:
                         "VALUES (NULL, %s, %s, NULL) RETURNING product_id", (order.create.name, order.create.desc))
             product_id = cur.fetchone()[0]
             cur.execute("INSERT INTO public.\"Order\"(client_id, product_id, "
-                        "order_deadline, client_order_cost, order_status) VALUES (%s, %s, %s, %s, %s)",
+                        "order_deadline, order_client_cost, order_status) VALUES (%s, %s, %s, %s, %s)",
                         (order.jwt_data.id, product_id, order.create.deadline, order.create.cost, order.create.status))
 
     @handle_sql_query
@@ -151,7 +151,7 @@ class DataBaseManager:
     @handle_sql_query
     def reset_order_created(self, order: UpdateOrder):
         with self.conn.cursor() as cur:
-            cur.execute("UPDATE public.\"Order\" SET  order_status='created', master_order_cost=NULL, master_id=NULL "
+            cur.execute("UPDATE public.\"Order\" SET  order_status='created', order_master_cost=NULL, master_id=NULL "
                         "WHERE order_id=%s RETURNING product_id",
                         (order.submit.order_id,))
             product_id = cur.fetchone()[0]
@@ -161,7 +161,7 @@ class DataBaseManager:
     @handle_sql_query
     def set_master_info_order(self, order: UpdateOrder):
         with self.conn.cursor() as cur:
-            cur.execute("UPDATE public.\"Order\" SET  order_status='updated', master_order_cost=%s, master_id=%s "
+            cur.execute("UPDATE public.\"Order\" SET  order_status='updated', order_master_cost=%s, master_id=%s "
                         "WHERE order_id=%s RETURNING product_id",
                         (order.update.cost, order.jwt_data.id, order.update.order_id,))
             product_id = cur.fetchone()[0]
