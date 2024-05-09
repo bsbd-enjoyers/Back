@@ -1,5 +1,5 @@
 from db.db_manager import DataBaseManager, QueryResult
-from dto.order import Order
+from dto.order import UpdateOrder, Submit, OrderStatus
 from enum import Enum
 from datetime import datetime
 from dto.auth import Role
@@ -15,41 +15,47 @@ class OrderRegister(Enum):
     BadData = "Fields data is bad or has wrong types"
 
 
+class UpdateResult(Enum):
+    Success = 1
+    Fail = 0
+
+
 class Update:
     def __init__(self, dbmanager: DataBaseManager):
         self.DB_manager = dbmanager
 
     @staticmethod
-    def __check_order_date(order: Order):
+    def __check_order_date(order: UpdateOrder):
         try:
-            date = datetime.strptime(order.deadline, "%d.%m.%Y")
+            date = datetime.strptime(order.create.deadline, "%d.%m.%Y")
         except ValueError:
             return OrderRegister.BadFormat
 
         if date < datetime.now():
             return OrderRegister.DateExpired
 
-        order.deadline = date
+        order.create.deadline = date
 
     @staticmethod
-    def __check_cost(order: Order):
-        if type(order.cost) is not int or order.cost < 0:
+    def __check_cost(order: UpdateOrder):
+        if type(order.create.cost) is not int or order.create.cost < 0:
             return OrderRegister.BadCost
 
     @staticmethod
-    def __check_empty_desc(order: Order):
-        if not bool(order.desc):
+    def __check_empty_desc(order: UpdateOrder):
+        if not bool(order.create.desc):
             return OrderRegister.EmptyDesc
 
     @staticmethod
-    def __check_role(order: Order):
-        if not order.jwt_data.role == Role.Client:
+    def __check_role(order: UpdateOrder) -> OrderRegister:
+        if order.jwt_data.role != Role.Client:
             return OrderRegister.BadPermissions
 
-    def add_order(self, order: Order) -> OrderRegister:
+    def add_order(self, order: UpdateOrder) -> OrderRegister:
         status = self.__check_order_date(order)
         status = self.__check_cost(order) if status is None else status
         status = self.__check_empty_desc(order) if status is None else status
+        status = self.__check_role(order) if status is None else status
 
         if status is not None:
             return status
@@ -59,5 +65,34 @@ class Update:
 
         return OrderRegister.Registered
 
-    def change_order_status(self):
-        pass
+    def change_client_order_status(self, order: UpdateOrder) -> UpdateResult:
+        if order.jwt_data.role != Role.Client:
+            return UpdateResult.Fail
+
+        query_status, order_status = self.DB_manager.get_order_status(order)
+        if query_status != QueryResult.Success or order_status != OrderStatus.Updated:
+            return UpdateResult.Fail
+
+        if order.update.submit == Submit.Accept:
+            _, result = self.DB_manager.set_client_submit(order)
+        else:
+            _, result = self.DB_manager.reset_order_created(order)
+
+        if result == QueryResult.Fail:
+            return UpdateResult.Fail
+
+        return UpdateResult.Success
+
+    def change_master_order_info(self, order: UpdateOrder) -> UpdateResult:
+        if order.jwt_data.role != Role.Master:
+            return UpdateResult.Fail
+
+        query_status, order_status = self.DB_manager.get_order_status(order)
+        if query_status != QueryResult.Success or order_status != OrderStatus.Created:
+            return UpdateResult.Fail
+
+        _, result = self.DB_manager.set_master_info_order(order)
+        if result == QueryResult.Fail:
+            return UpdateResult.Fail
+
+        return UpdateResult.Success

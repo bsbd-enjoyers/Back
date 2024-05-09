@@ -1,6 +1,6 @@
 import psycopg2 as postgresql
 from dto.auth import RegisterData, Role
-from dto.order import Order
+from dto.order import UpdateOrder, OrderStatus
 
 
 class QueryResult:
@@ -116,15 +116,15 @@ class DataBaseManager:
         return result
 
     @handle_sql_query
-    def create_order(self, order: Order):
+    def create_order(self, order: UpdateOrder):
         with self.conn.cursor() as cur:
             cur.execute("INSERT INTO public.\"Product\" (product_type, product_name, "
                         "product_client_description, product_master_specification)"
-                        "VALUES (NULL, %s, %s, NULL) RETURNING product_id", (order.name, order.desc))
+                        "VALUES (NULL, %s, %s, NULL) RETURNING product_id", (order.create.name, order.create.desc))
             product_id = cur.fetchone()[0]
-            cur.execute("INSERT INTO public.\"Order\"(client_id, master_id, product_id, "
-                        "order_deadline, order_cost, order_status) VALUES (%s, NULL, %s, %s, %s, %s)",
-                        (order.jwt_data.id, product_id, order.deadline, order.cost, order.status))
+            cur.execute("INSERT INTO public.\"Order\"(client_id, product_id, "
+                        "order_deadline, client_order_cost, order_status) VALUES (%s, %s, %s, %s, %s)",
+                        (order.jwt_data.id, product_id, order.create.deadline, order.create.cost, order.create.status))
 
     @handle_sql_query
     def get_skills(self, master_id):
@@ -133,3 +133,37 @@ class DataBaseManager:
                         "FROM public.\"Skill\" WHERE master_id=%s", (master_id,))
             result = cur.fetchall()
         return result
+
+    @handle_sql_query
+    def get_order_status(self, order: UpdateOrder) -> OrderStatus:
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT order_status FROM public.\"Order\" WHERE order_id=%s",
+                        (order.submit.order_id,))
+            result = cur.fetchone()[0]
+        return OrderStatus(result)
+
+    @handle_sql_query
+    def set_client_submit(self, order: UpdateOrder):
+        with self.conn.cursor() as cur:
+            cur.execute("UPDATE public.\"Order\" SET  order_status='accepted' WHERE order_id=%s",
+                        (order.submit.order_id,))
+
+    @handle_sql_query
+    def reset_order_created(self, order: UpdateOrder):
+        with self.conn.cursor() as cur:
+            cur.execute("UPDATE public.\"Order\" SET  order_status='created', master_order_cost=NULL, master_id=NULL "
+                        "WHERE order_id=%s RETURNING product_id",
+                        (order.submit.order_id,))
+            product_id = cur.fetchone()[0]
+            cur.execute("UPDATE public.\"Product\" SET product_type=NULL, product_master_specification=NULL "
+                        "WHERE product_id=%s", (product_id,))
+
+    @handle_sql_query
+    def set_master_info_order(self, order: UpdateOrder):
+        with self.conn.cursor() as cur:
+            cur.execute("UPDATE public.\"Order\" SET  order_status='updated', master_order_cost=%s, master_id=%s "
+                        "WHERE order_id=%s RETURNING product_id",
+                        (order.update.cost, order.jwt_data.id, order.update.order_id,))
+            product_id = cur.fetchone()[0]
+            cur.execute("UPDATE public.\"Product\" SET product_type=%s, product_master_specification=%s "
+                        "WHERE product_id=%s", (order.update.product_type, order.update.mater_desc, product_id,))

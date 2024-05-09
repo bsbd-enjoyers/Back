@@ -3,9 +3,9 @@ from db.db_manager import DataBaseManager
 from action.auth import Auth, AuthResult, RegisterResult, CheckLoginResult
 from action.provide import Provide, GetResult
 from action.web import Web
-from action.update import Update, OrderRegister
+from action.update import Update, OrderRegister, UpdateResult
 from dto.auth import *
-from dto.order import Order
+from dto.order import UpdateOrder, Action
 from dto.simple import SimpleResult, SimpleMsg, Query
 from config import POSTGRESQL_LOGIN
 
@@ -74,19 +74,38 @@ def search(jwt_data):
 @web.check_jwt
 def orders(jwt_data: JwtData):
     if request.method == "POST":
-
         try:
-            order = Order(jwt_data, request.get_json())
+            order = UpdateOrder(jwt_data, request.get_json())
         except ValueError as e:
             print(e)
             return SimpleMsg("Bad Json").response(), 400
 
-        status = update.add_order(order)
+        if order.action == Action.Create:
+            status = update.add_order(order)
 
-        if status != OrderRegister.Registered:
-            return SimpleMsg(status.value).response(), 400
+            if status != OrderRegister.Registered:
+                return SimpleResult(False).response(), 400
+            print(f"Order registration ended with {status}")
+            return SimpleResult(True).response(), 200
 
-        return SimpleMsg(status.value).response(), 200
+        elif order.action == Action.Submit:
+            status = update.change_client_order_status(order)
+            if status != UpdateResult.Success:
+                return SimpleResult(False).response(), 400
+
+            print(f"Order submit ended with {status}")
+            return SimpleResult(True).response(), 200
+
+        elif order.action == Action.Update:
+            status = update.change_master_order_info(order)
+            if status != UpdateResult.Success:
+                return SimpleResult(False).response(), 400
+
+            print(f"Order update ended with {status}")
+            return SimpleResult(True).response(), 200
+
+        else:
+            return SimpleMsg("Bad Request").response(), 400
 
     if request.method == "GET":
         order_records, result = provide.get_orders(jwt_data)
