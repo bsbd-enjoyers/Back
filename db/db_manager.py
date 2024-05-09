@@ -98,7 +98,7 @@ class DataBaseManager:
     @handle_sql_query
     def get_client_orders(self, client_id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT order_id, order_deadline, order_totalcost, order_status, product_full_name, "
+            cur.execute("SELECT order_id, order_deadline, order_cost, order_status, product_name, "
                         "product_client_description, product_master_specification FROM public.\"Order\" JOIN "
                         "public.\"Product\" ON public.\"Order\".product_id=public.\"Product\".product_id WHERE "
                         "client_id=%s", (client_id,))
@@ -108,7 +108,7 @@ class DataBaseManager:
     @handle_sql_query
     def get_master_orders(self, master_id):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT order_id, order_deadline, order_totalcost, order_status, product_full_name, "
+            cur.execute("SELECT order_id, order_deadline, order_cost, order_status, product_name, "
                         "product_client_description, product_master_specification FROM public.\"Order\" JOIN "
                         "public.\"Product\" ON public.\"Order\".product_id=public.\"Product\".product_id WHERE "
                         "master_id=%s", (master_id,))
