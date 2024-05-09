@@ -1,7 +1,7 @@
 from flask import Flask, request
 from db.db_manager import DataBaseManager
-from action.auth import Auth, AuthResult, RegisterResult
-from action.provide import Provide
+from action.auth import Auth, AuthResult, RegisterResult, CheckLoginResult
+from action.provide import Provide, GetResult
 from action.web import Web
 from action.update import Update, OrderRegister
 from dto.auth import *
@@ -29,6 +29,7 @@ def login():
     resp = SimpleResult(False).response()
 
     token, result = auth.login(auth_class)
+    print(f"Login for {auth_class.username} with res {result}")
     if result == AuthResult.Accept:
         resp = SimpleResult(True).response()
         resp.set_cookie("AuthTokenJWT", value=token)
@@ -47,7 +48,11 @@ def check_login():
         return SimpleMsg("Bad Json").response(), 400
 
     # print(login_json)
-    if auth.check_login_exists(check_login_class):
+    result = auth.check_login_exists(check_login_class)
+    if result == CheckLoginResult.error:
+        return SimpleMsg("Bad Json").response(), 400
+
+    if result == CheckLoginResult.true:
         return SimpleResult(True).response(), 200
 
     return SimpleResult(False).response(), 200
@@ -94,13 +99,16 @@ def orders(jwt_data: JwtData):
 @web.check_jwt
 def session(jwt_data):
     if request.method == "GET":
-        return provide.get_userinfo(jwt_data).response(), 200
+        userinfo, result = provide.get_userinfo(jwt_data)
+        if result == GetResult.Fail:
+            return SimpleMsg("Bad Request").response(), 400
 
+        return userinfo.response(), 200
     if request.method == "POST":
         auth.drop_session(jwt_data)
         return "cool", 200  # TODO: then session
 
-    return "Bad Request", 400
+    return SimpleMsg("Bad Request").response(), 400
 
 
 @app.route('/register', methods=["POST"])

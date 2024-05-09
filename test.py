@@ -1,10 +1,11 @@
 from requests import *
+from dataclasses import dataclass
 
 check_login_json = {
-    "login": "ganda"
+    "login": 10
 }
 register_json = {
-    "login": "ganda",
+    "login": "zippo",
     "password": "pupa",
     "role": "client",
     "fullname": "abobchik",

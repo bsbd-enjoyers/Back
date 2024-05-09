@@ -53,7 +53,7 @@ class RegisterData(DataPrototype):
 
 class CheckLogin(DataPrototype):
     def __init__(self, userdata):
-        self.username = userdata.get("login")
+        self.username: str = userdata.get("login")
         self.check_empty()
 
 
