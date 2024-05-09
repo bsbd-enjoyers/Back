@@ -5,9 +5,10 @@ from action.provide import Provide, GetResult
 from action.web import Web
 from action.update import Update, OrderRegister, UpdateResult
 from dto.auth import *
+import ssl
 from dto.order import UpdateOrder, Action
-from dto.simple import SimpleResult, SimpleMsg, Query
-from config import POSTGRESQL_LOGIN
+from dto.simple import *
+from config import POSTGRESQL_LOGIN, SSL_KEY, SSL_CERT
 
 app = Flask(__name__)
 db_manager = DataBaseManager(POSTGRESQL_LOGIN)
@@ -151,4 +152,6 @@ def register():
 
 
 if __name__ == '__main__':
-    app.run("0.0.0.0")
+    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    ssl_context.load_cert_chain(SSL_CERT, SSL_KEY)
+    app.run(ssl_context=ssl_context)

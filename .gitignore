@@ -1,3 +1,5 @@
 venv/
 test.py
 config.py
+key.pem
+cert.pem

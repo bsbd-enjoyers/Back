@@ -1,6 +1,8 @@
 from requests import *
 from dataclasses import dataclass
 
+URL = "https://127.0.0.1:5000"
+
 check_login_json = {
     "login": "zippo"
 }
@@ -38,7 +40,7 @@ def print_json(data):
 def register(data, ses):
     print("\nRegister")
     print_json(data)
-    resp = ses.post("http://127.0.0.1:5000/register", json=data)
+    resp = ses.post(f"{URL}/register", json=data, verify=False)
     print("\nResponse")
     print(resp.text)
 
@@ -46,7 +48,7 @@ def register(data, ses):
 def check_login(data, ses):
     print("\nCheck_login")
     print_json(data)
-    resp = ses.post("http://127.0.0.1:5000/check_login", json=data)
+    resp = ses.post(f"{URL}/check_login", json=data, verify=False)
     print("\nResponse")
     print(resp.text)
 
@@ -54,18 +56,18 @@ def check_login(data, ses):
 def login(data, ses):
     print("\nLogin")
     print_json(data)
-    resp = ses.post("http://127.0.0.1:5000/login", json=data)
+    resp = ses.post(f"{URL}/login", json=data, verify=False)
     print("\nResponse")
     print_json(resp.headers)
     print(resp.text)
-    resp = ses.get("http://127.0.0.1:5000/session")
+    resp = ses.get(f"{URL}/session")
     print(resp.text)
 
 
 def add_order(data, ses):
     print("\nAdd Order")
     print_json(data)
-    resp = ses.post("http://127.0.0.1:5000/orders", json=data)
+    resp = ses.post(f"{URL}/orders", json=data, verify=False)
     print("\n Response")
     print(resp.text)
     pass
@@ -73,6 +75,6 @@ def add_order(data, ses):
 
 s = Session()
 check_login(check_login_json, s)
-register(register_json, s)
-login(login_json, s)
-add_order(order_json, s)
+#register(register_json, s)
+#login(login_json, s)
+#add_order(order_json, s)
