@@ -79,7 +79,7 @@ class UpdateOrder(DataPrototype):
 class OrderRecord:
     def __init__(self, record):
         self.order_id = record[0]
-        self.deadline = record[1]
+        self.deadline = record[1].strftime("%d/%m/%Y")
         self.master_id = record[2]
         self.client_id = record[3]
         self.client_cost = record[4]
