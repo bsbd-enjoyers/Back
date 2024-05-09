@@ -2,7 +2,7 @@ from requests import *
 from dataclasses import dataclass
 
 check_login_json = {
-    "login": 10
+    "login": "zippo"
 }
 register_json = {
     "login": "zippo",
@@ -18,7 +18,7 @@ register_json = {
     }
 }
 login_json = {
-    "login": "ganda",
+    "login": "zippo",
     "password": "pupa"
 }
 
@@ -35,37 +35,37 @@ def print_json(data):
         print(f"{key}: {value}")
 
 
-def register(data, s):
+def register(data, ses):
     print("\nRegister")
     print_json(data)
-    resp = s.post("http://127.0.0.1:5000/register", json=data)
+    resp = ses.post("http://127.0.0.1:5000/register", json=data)
     print("\nResponse")
     print(resp.text)
 
 
-def check_login(data, s):
+def check_login(data, ses):
     print("\nCheck_login")
     print_json(data)
-    resp = s.post("http://127.0.0.1:5000/check_login", json=data)
+    resp = ses.post("http://127.0.0.1:5000/check_login", json=data)
     print("\nResponse")
     print(resp.text)
 
 
-def login(data, s):
+def login(data, ses):
     print("\nLogin")
     print_json(data)
-    resp = s.post("http://127.0.0.1:5000/login", json=data)
+    resp = ses.post("http://127.0.0.1:5000/login", json=data)
     print("\nResponse")
     print_json(resp.headers)
     print(resp.text)
-    resp = s.get("http://127.0.0.1:5000/session")
+    resp = ses.get("http://127.0.0.1:5000/session")
     print(resp.text)
 
 
-def add_order(data, s):
+def add_order(data, ses):
     print("\nAdd Order")
-    print(data)
-    resp = s.post("http://127.0.0.1:5000/orders", json=data)
+    print_json(data)
+    resp = ses.post("http://127.0.0.1:5000/orders", json=data)
     print("\n Response")
     print(resp.text)
     pass

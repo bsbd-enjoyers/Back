@@ -117,7 +117,14 @@ class DataBaseManager:
 
     @handle_sql_query
     def create_order(self, order: Order):
-        pass
+        with self.conn.cursor() as cur:
+            cur.execute("INSERT INTO public.\"Product\" (product_type, product_name, "
+                        "product_client_description, product_master_specification)"
+                        "VALUES (NULL, %s, %s, NULL) RETURNING product_id", (order.name, order.desc))
+            product_id = cur.fetchone()[0]
+            cur.execute("INSERT INTO public.\"Order\"(client_id, master_id, product_id, "
+                        "order_deadline, order_cost, order_status) VALUES (%s, NULL, %s, %s, %s, %s)",
+                        (order.jwt_data.id, product_id, order.deadline, order.cost, order.status))
 
     @handle_sql_query
     def get_skills(self, master_id):

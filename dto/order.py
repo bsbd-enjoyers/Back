@@ -11,6 +11,7 @@ class Order(DataPrototype):
         self.cost = order_json.get("cost")
         self.name = order_json.get("name")
         self.deadline = order_json.get("deadline")
+        self.status = "created"
         self.check_empty()
 
 

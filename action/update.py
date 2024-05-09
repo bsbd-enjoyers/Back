@@ -1,4 +1,4 @@
-from db.db_manager import DataBaseManager
+from db.db_manager import DataBaseManager, QueryResult
 from dto.order import Order
 from enum import Enum
 from datetime import datetime
@@ -12,6 +12,7 @@ class OrderRegister(Enum):
     EmptyDesc = "Description is empty"
     Registered = "Order registered"
     BadPermissions = "Only Client can register orders"
+    BadData = "Fields data is bad or has wrong types"
 
 
 class Update:
@@ -49,10 +50,14 @@ class Update:
         status = self.__check_order_date(order)
         status = self.__check_cost(order) if status is None else status
         status = self.__check_empty_desc(order) if status is None else status
-        self.DB_manager.create_order(order)
-        if status is None:
-            return OrderRegister.Registered
-        return status
+
+        if status is not None:
+            return status
+
+        if self.DB_manager.create_order(order)[-1] == QueryResult.Fail:
+            return OrderRegister.BadData
+
+        return OrderRegister.Registered
 
     def change_order_status(self):
         pass
