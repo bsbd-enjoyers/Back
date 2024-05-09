@@ -77,24 +77,18 @@ class UpdateOrder(DataPrototype):
 
 
 class OrderRecord:
-    order_id = None
-    deadline = None
-    master_id = None
-    client_id = None
-    client_cost = None
-    master_cost = None
-    status = None
-    name = None
-    type = None
-    client_desc = None
-    master_desc = None
-
     def __init__(self, record):
-        keys = list(self.__dict__.keys())
-        for i in range(len(record)):
-            self.__dict__[keys[i]] = record[i]
-
-
+        self.order_id = record[0]
+        self.deadline = record[1]
+        self.master_id = record[2]
+        self.client_id = record[3]
+        self.client_cost = record[4]
+        self.master_cost = record[5]
+        self.status = record[6]
+        self.name = record[7]
+        self.type = record[8]
+        self.client_desc = record[9]
+        self.master_desc = record[10]
 
 
 class Orders(ResponsePrototype):
