@@ -6,6 +6,7 @@ from enum import Enum
 class Role(Enum):
     Master = "master"
     Client = "client"
+    Admin = "admin"
 
     @staticmethod
     def get(value):

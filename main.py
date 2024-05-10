@@ -63,12 +63,14 @@ def check_login():
 @web.check_jwt
 def search(jwt_data):
     try:
-        query = Query(request.get_json())
+        query = Query(jwt_data, request.get_json())
     except ValueError as e:
         print(e)
         return SimpleMsg("Should query field with 4 characters long query").response(), 400
-
-    return "cool", 200  # TODO: then then search
+    query_result, status = provide.search(query)
+    if status != GetResult.Success:
+        return SimpleResult(False).response(), 200
+    return query_result.response(), 200  # TODO: then then search
 
 
 @app.route("/orders", methods=["GET", "POST"])

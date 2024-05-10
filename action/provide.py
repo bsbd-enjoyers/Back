@@ -45,5 +45,15 @@ class Provide:
         orders = Orders(orders)
         return orders, GetResult.Success
 
-    def search(self, query: Query):
-        pass
+    def __search_master(self, query: Query):
+        result, status = self.DB_manager.search_order(query.query)
+        if status == QueryResult.Fail:
+            return None, GetResult.Fail
+        orders = Orders(result)
+        return orders, GetResult.Success
+
+    def search(self, query: Query) -> [Orders]:
+        if query.jwt_data.role == Role.Master:
+            return self.__search_master(query)
+        else:
+            return None, GetResult.Fail

@@ -1,6 +1,13 @@
 from dto.prototypes import ResponsePrototype
 from dto.prototypes import DataPrototype
+from dto.auth import JwtData
 from enum import Enum
+
+
+class SearchEntity(Enum):
+    Master = "master"
+    Client = "client"
+    Orders = "order"
 
 
 class SimpleResult(ResponsePrototype):
@@ -14,11 +21,13 @@ class SimpleMsg(ResponsePrototype):
 
 
 class Query(DataPrototype):
-    def __init__(self, data):
+    def __init__(self, jwt_data: JwtData, data):
+        self.jwt_data = jwt_data
         self.query = data.get("query")
+        self.entity = SearchEntity(data.get("entity"))
         self.check_query()
         self.check_empty()
 
     def check_query(self):
-        if type(self.query) is str and len(self.query) > 3:
-            raise ValueError("Query should be str and at least 4 characters long")
+        if type(self.query) is str and len(self.query) > 2:
+            raise ValueError("Query should be str and at least 3 characters long")

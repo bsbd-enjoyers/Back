@@ -167,3 +167,15 @@ class DataBaseManager:
             product_id = cur.fetchone()[0]
             cur.execute("UPDATE public.\"Product\" SET product_type=%s, product_master_specification=%s "
                         "WHERE product_id=%s", (order.update.product_type, order.update.mater_desc, product_id,))
+
+    @handle_sql_query
+    def search_order(self, substr):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, "
+                        "order_status, product_name, product_type, product_client_description, "
+                        "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON "
+                        "public.\"Order\".product_id=public.\"Product\".product_id WHERE "
+                        "public.\"Order\".order_status='created' AND (LOWER(public.\"Product\".product_name) ~ %s OR "
+                        "LOWER(public.\"Product\".product_client_description) ~ %s)", (substr,))
+            result = cur.fetchall()
+        return result
