@@ -13,7 +13,7 @@ class Web:
         if token is None:
             return None
         token = token.replace("AuthTokenJWT=", "")
-        print(token)
+        #print(token)
         return token
 
     def check_jwt(self, request_handler):

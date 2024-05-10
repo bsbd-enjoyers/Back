@@ -69,11 +69,11 @@ class Update:
         if order.jwt_data.role != Role.Client:
             return UpdateResult.Fail
 
-        query_status, order_status = self.DB_manager.get_order_status(order)
+        order_status, query_status = self.DB_manager.get_order_status(order)
         if query_status != QueryResult.Success or order_status != OrderStatus.Updated:
             return UpdateResult.Fail
 
-        if order.update.submit == Submit.Accept:
+        if order.submit.submit == Submit.Accept:
             _, result = self.DB_manager.set_client_submit(order)
         else:
             _, result = self.DB_manager.reset_order_created(order)
