@@ -19,6 +19,7 @@ class DataBaseManager:
             try:
                 value = request(self, *args, **kwargs)
             except Exception as e:
+                print("SQL Exception")
                 print(e)
                 self.conn.rollback()
                 return None, QueryResult.Fail

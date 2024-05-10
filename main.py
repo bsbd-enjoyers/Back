@@ -94,7 +94,7 @@ def orders(jwt_data: JwtData):
         elif order.action == Action.Submit:
             status = update.change_client_order_status(order)
             if status != UpdateResult.Success:
-                return SimpleResult(False).response(), 400
+                return SimpleResult(False).response(), 200
 
             print(f"Order submit ended with {status}")
             return SimpleResult(True).response(), 200
@@ -102,7 +102,7 @@ def orders(jwt_data: JwtData):
         elif order.action == Action.Update:
             status = update.change_master_order_info(order)
             if status != UpdateResult.Success:
-                return SimpleResult(False).response(), 400
+                return SimpleResult(False).response(), 200
 
             print(f"Order update ended with {status}")
             return SimpleResult(True).response(), 200

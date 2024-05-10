@@ -93,5 +93,4 @@ class OrderRecord:
 
 class Orders(ResponsePrototype):
     def __init__(self, orders_tuple):
-        print(orders_tuple)
         self.orders = [OrderRecord(order).__dict__ for order in orders_tuple]

@@ -87,7 +87,7 @@ class Update:
         if order.jwt_data.role != Role.Master:
             return UpdateResult.Fail
 
-        query_status, order_status = self.DB_manager.get_order_status(order)
+        order_status, query_status = self.DB_manager.get_order_status(order)
         if query_status != QueryResult.Success or order_status != OrderStatus.Created:
             return UpdateResult.Fail
 
