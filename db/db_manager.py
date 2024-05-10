@@ -138,7 +138,7 @@ class DataBaseManager:
     def get_order_status(self, order: UpdateOrder) -> OrderStatus:
         with self.conn.cursor() as cur:
             cur.execute("SELECT order_status FROM public.\"Order\" WHERE order_id=%s",
-                        (order.submit.order_id,))
+                        (order.order_id,))
             result = cur.fetchone()[0]
         return OrderStatus(result)
 
@@ -146,14 +146,14 @@ class DataBaseManager:
     def set_client_submit(self, order: UpdateOrder):
         with self.conn.cursor() as cur:
             cur.execute("UPDATE public.\"Order\" SET  order_status='accepted' WHERE order_id=%s",
-                        (order.submit.order_id,))
+                        (order.order_id,))
 
     @handle_sql_query
     def reset_order_created(self, order: UpdateOrder):
         with self.conn.cursor() as cur:
             cur.execute("UPDATE public.\"Order\" SET  order_status='created', order_master_cost=NULL, master_id=NULL "
                         "WHERE order_id=%s RETURNING product_id",
-                        (order.submit.order_id,))
+                        (order.order_id,))
             product_id = cur.fetchone()[0]
             cur.execute("UPDATE public.\"Product\" SET product_type=NULL, product_master_specification=NULL "
                         "WHERE product_id=%s", (product_id,))
@@ -163,7 +163,7 @@ class DataBaseManager:
         with self.conn.cursor() as cur:
             cur.execute("UPDATE public.\"Order\" SET  order_status='updated', order_master_cost=%s, master_id=%s "
                         "WHERE order_id=%s RETURNING product_id",
-                        (order.update.cost, order.jwt_data.id, order.update.order_id,))
+                        (order.update.cost, order.jwt_data.id, order.order_id,))
             product_id = cur.fetchone()[0]
             cur.execute("UPDATE public.\"Product\" SET product_type=%s, product_master_specification=%s "
                         "WHERE product_id=%s", (order.update.product_type, order.update.mater_desc, product_id,))
@@ -179,3 +179,4 @@ class DataBaseManager:
                         "LOWER(public.\"Product\".product_client_description) ~ %s)", (substr,))
             result = cur.fetchall()
         return result
+

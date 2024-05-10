@@ -50,13 +50,11 @@ class Order(DataPrototype):
 class ClientOrderSubmit(DataPrototype):
     def __init__(self, data_json):
         self.submit = Submit.get(data_json.get("submit"))
-        self.order_id = data_json.get("id_order")
         self.check_empty()
 
 
 class MasterOrderDesc(DataPrototype):
     def __init__(self, data_json):
-        self.order_id = data_json.get("id_order")
         self.product_type = data_json.get("type")
         self.cost = data_json.get("cost")
         self.mater_desc = data_json.get("master_desc")
@@ -69,8 +67,10 @@ class UpdateOrder(DataPrototype):
         self.action = Action.get(update_json.get("action"))
         if self.action == Action.Update:
             self.update = MasterOrderDesc(update_json)
+            self.order_id = update_json.get("id_order")
         elif self.action == Action.Submit:
             self.submit = ClientOrderSubmit(update_json)
+            self.order_id = update_json.get("id_order")
         elif self.action == Action.Create:
             self.create = Order(update_json)
         self.check_empty()
