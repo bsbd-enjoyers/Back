@@ -30,4 +30,5 @@ class Query(DataPrototype):
 
     def check_query(self):
         if type(self.query) is str and len(self.query) > 2:
-            raise ValueError("Query should be str and at least 3 characters long")
+            return
+        raise ValueError("Query should be str and at least 3 characters long")

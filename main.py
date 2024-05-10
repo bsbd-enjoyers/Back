@@ -66,7 +66,7 @@ def search(jwt_data):
         query = Query(jwt_data, request.get_json())
     except ValueError as e:
         print(e)
-        return SimpleMsg("Should query field with 4 characters long query").response(), 400
+        return SimpleResult(False).response(), 400
     query_result, status = provide.search(query)
     if status != GetResult.Success:
         return SimpleResult(False).response(), 200

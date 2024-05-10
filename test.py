@@ -7,9 +7,9 @@ check_login_json = {
     "login": "zippo"
 }
 register_json = {
-    "login": "zippo",
+    "login": "miga",
     "password": "pupa",
-    "role": "client",
+    "role": "master",
     "fullname": "abobchik",
     "email": "aboba@mail.ru",
     "phone": "88005553535",
@@ -20,15 +20,21 @@ register_json = {
     }
 }
 login_json = {
-    "login": "zippo",
+    "login": "miga",
     "password": "pupa"
 }
 
 order_json = {
-    "desc": "ya sosal menya ebali",
-    "name": "Searching for podsos",
+    "action": "create",
+    "desc": "pascha is onelove",
+    "name": "love66",
     "deadline": "12.08.2024",
     "cost": 300
+}
+
+search_json = {
+    "entity": "order",
+    "query": "webs"
 }
 
 
@@ -73,8 +79,18 @@ def add_order(data, ses):
     pass
 
 
+def search(data, ses):
+    print("\nSearch")
+    print_json(search_json)
+    resp = ses.post(f"{URL}/search", json=data, verify=False)
+    print("\n Response")
+    print(resp.text)
+
+
 s = Session()
-check_login(check_login_json, s)
+#check_login(check_login_json, s)
 #register(register_json, s)
-#login(login_json, s)
+login(login_json, s)
 #add_order(order_json, s)
+search(search_json, s)
+
