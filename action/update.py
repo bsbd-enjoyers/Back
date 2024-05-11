@@ -3,7 +3,7 @@ from dto.order import UpdateOrder, Submit, OrderStatus
 from enum import Enum
 from datetime import datetime
 from dto.auth import Role
-from dto.simple import DeleteEntity, Entity
+from dto.simple import ManageEntity, Entity
 from action.auth import Auth, ReturnType
 
 
@@ -78,14 +78,21 @@ class Update:
 
         return OperationResult.Success
 
-    def delete_entity(self, entity_info: DeleteEntity) -> OperationResult:
+    def manage_entity(self, entity_info: ManageEntity) -> OperationResult:
         if entity_info.entity == Entity.Order:
             return self.__delete_order(entity_info)
         else:
-            return OperationResult.Fail
+            return self.__ban_account(entity_info)
+
+    @Auth.check_permissions_factory([Role.Admin], ReturnType.OneVal)
+    def __ban_account(self, entity_info: ManageEntity):
+        _, query_status = self.DB_manager.ban_account(entity_info)
+        if query_status != QueryResult.Success:
+            return query_status
+        return OperationResult.Success
 
     @Auth.check_permissions_factory([Role.Client, Role.Admin], ReturnType.OneVal)
-    def __delete_order(self, order: DeleteEntity) -> OperationResult:
+    def __delete_order(self, order: ManageEntity) -> OperationResult:
         _, query_status = self.DB_manager.delete_order(order)
         if query_status != QueryResult.Success:
             return query_status

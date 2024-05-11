@@ -16,6 +16,15 @@ class AuthData(DataPrototype):
         self.check_empty()
 
 
+class ServiceData:
+    def __init__(self, service_card):
+        self.login = service_card[0]
+        self.password = service_card[1]
+        self.role = Role(service_card[2])
+        self.id = service_card[3]
+        self.banned = service_card[4]
+
+
 class RegisterData(DataPrototype):
     def __init__(self, userdata):
         self.service_data_id = "empty"

@@ -20,7 +20,7 @@ class SimpleMsg(ResponsePrototype):
         self.msg = msg
 
 
-class DeleteEntity(DataPrototype):
+class ManageEntity(DataPrototype):
     def __init__(self, jwt_data, data):
         self.jwt_data = jwt_data
         self.entity = Entity(data.get("entity"))

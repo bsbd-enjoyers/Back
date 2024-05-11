@@ -1,5 +1,5 @@
 from enum import Enum
-from dto.auth import AuthData, CheckLogin, RegisterData, JwtData, Role
+from dto.auth import AuthData, CheckLogin, RegisterData, JwtData, Role, ServiceData
 from passlib.hash import sha512_crypt
 from db.db_manager import QueryResult
 import time
@@ -11,9 +11,9 @@ from db.db_manager import DataBaseManager
 
 class AuthResult(Enum):
     NotFound = 1
-    WrongData = 2
+    WrongPassword = 2
     Accept = 3
-    error = 4
+    Banned = 4
 
 
 class RegisterResult(Enum):
@@ -31,7 +31,6 @@ class JwtCheckResult(Enum):
 class CheckLoginResult(Enum):
     true = 1
     false = 2
-    error = 3
 
 
 class CheckPermission(Enum):
@@ -48,29 +47,31 @@ class Auth:
         self.DB_manager = dbmanager
 
     def login(self, userdata: AuthData):
-        service_card, account_search_res = self.DB_manager.find_account(userdata.username)
+        service_card, search_res = self.DB_manager.find_account(userdata.username)
 
-        if account_search_res == QueryResult.Fail:
-            return None, AuthResult.error
+        if search_res == QueryResult.Fail:
+            return None, search_res
 
         if not service_card:
             print(f"No such user: {userdata.username}")
             return None, AuthResult.NotFound
 
-        if service_card[2] == "master":
+        service_data = ServiceData(service_card)
+        if service_data.banned:
+            return None, AuthResult.Banned
+
+        if service_data.role == Role.Master:
             user_card, search_res = self.DB_manager.get_master(userdata.username)
         else:
             user_card, search_res = self.DB_manager.get_client(userdata.username)
 
         if search_res == QueryResult.Fail:
-            return None, AuthResult.error
+            return None, search_res
 
         if not sha512_crypt.verify(userdata.password, service_card[1]):
-            print(f"Wrong Password for user {userdata.username}")
-            return None, AuthResult.WrongData
+            return None, AuthResult.WrongPassword
 
-        print(f"Auth Success for user {userdata.username}")
-        return self.__gen_jwt(service_card[0], service_card[2], user_card[0]), AuthResult.Accept
+        return self.__gen_jwt(service_data.login, service_data.role, user_card[0]), AuthResult.Accept
 
     @staticmethod
     def __gen_jwt(username, role, user_id) -> str:
@@ -100,7 +101,7 @@ class Auth:
     def check_login_exists(self, userdata: [CheckLogin, RegisterData]):
         user_card, result = self.DB_manager.find_account(userdata.username)
         if result == QueryResult.Fail:
-            return CheckLoginResult.error
+            return result
         if user_card:
             return CheckLoginResult.true
         return CheckLoginResult.false

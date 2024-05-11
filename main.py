@@ -74,16 +74,16 @@ def search(jwt_data):
     return query_result.response(), 200  # TODO: then then search
 
 
-@app.route("/delete", methods=["POST"])
+@app.route("/manage", methods=["POST"])
 @web.check_jwt
-def delete(jwt_data):
+def manage(jwt_data):
     try:
-        order = DeleteEntity(jwt_data, request.get_json())
+        order = ManageEntity(jwt_data, request.get_json())
     except ValueError as e:
         print(e)
         return SimpleMsg("Bad Json").response(), 400
 
-    status = update.delete_entity(order)
+    status = update.manage_entity(order)
     print(f"Delete ended with result {status}")
     if status != OperationResult.Success:
         return SimpleResult(False).response(), 200

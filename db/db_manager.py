@@ -1,7 +1,7 @@
 import psycopg2 as postgresql
 from dto.auth import RegisterData, Role
 from dto.order import UpdateOrder, OrderStatus
-from dto.simple import DeleteEntity
+from dto.simple import ManageEntity
 
 
 class QueryResult:
@@ -32,8 +32,8 @@ class DataBaseManager:
     @handle_sql_query
     def find_account(self, username):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT service_data_login, service_data_password, service_data_role, service_data_id"
-                        " FROM public.\"Service_data\" WHERE service_data_login=%s", (username,))
+            cur.execute("SELECT service_data_login, service_data_password, service_data_role, service_data_id, "
+                        "service_data_banned FROM public.\"Service_data\" WHERE service_data_login=%s", (username,))
             result = cur.fetchone()
         return result
 
@@ -183,14 +183,23 @@ class DataBaseManager:
         return result
 
     @handle_sql_query
-    def delete_order(self, delete_info: DeleteEntity):
+    def delete_order(self, delete_info: ManageEntity):
         with self.conn.cursor() as cur:
             cur.execute("DELETE FROM public.\"Order\" WHERE order_id=%s AND client_id=%s RETURNING product_id",
                         (delete_info.id, delete_info.jwt_data.id))
             product_id = cur.fetchall()
-            print(product_id)
             if len(product_id) != 1:
                 raise RuntimeError(f"Bad Number of records was deleted {len(product_id)}")
             cur.execute("DELETE FROM public.\"Product\" WHERE product_id=%s",
                         (product_id[0][0],))
+
+    @handle_sql_query
+    def ban_account(self, ban_info: ManageEntity):
+        with self.conn.cursor() as cur:
+            cur.execute("UPDATE public.\"Service_data\" SET service_data_banned=true WHERE service_data_role=%s AND "
+                        "service_data_id=%s RETURNING service_data_id",
+                        (ban_info.entity.value, ban_info.id,))
+            banned_id = cur.fetchall()
+            if len(banned_id) != 1:
+                raise RuntimeError(f"Bad Number of records was deleted {len(banned_id)}")
 
