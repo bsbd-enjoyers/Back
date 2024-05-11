@@ -50,13 +50,10 @@ def check_login():
 
     # print(login_json)
     result = auth.check_login_exists(check_login_class)
-    if result in (CheckLoginResult.true, CheckLoginResult.false):
+    if type(result) is not CheckLoginResult:
         return SimpleMsg("Bad Json").response(), 400
 
-    if result == CheckLoginResult.true:
-        return SimpleResult(True).response(), 200
-
-    return SimpleResult(False).response(), 200
+    return SimpleResult(result.value).response(), 200
 
 
 @app.route("/search", methods=["POST"])
