@@ -197,7 +197,7 @@ class DataBaseManager:
     @handle_sql_query
     def ban_account(self, ban_info: ManageEntity):
         with self.conn.cursor() as cur:
-            cur.execute("UPDATE public.\"Service_data\" SET service_data_banned=true WHERE service_data_id=%s "
+            cur.execute("UPDATE public.\"Service_data\" SET service_data_banned=true WHERE service_data_login=%s "
                         "RETURNING service_data_id", (ban_info.id,))
             banned_id = cur.fetchall()
             if len(banned_id) != 1:
