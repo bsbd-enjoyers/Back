@@ -75,7 +75,7 @@ class Auth:
         if not sha512_crypt.verify(userdata.password, service_card[1]):
             return None, AuthResult.WrongPassword
 
-        return self.__gen_jwt(service_data.login, service_data.role, user_card), AuthResult.Accept
+        return self.__gen_jwt(service_data.login, service_data.role.value, user_card), AuthResult.Accept
 
     @staticmethod
     def __gen_jwt(username, role, user_id) -> str:
