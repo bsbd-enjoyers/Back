@@ -144,7 +144,7 @@ def orders(jwt_data: JwtData):
 def session(jwt_data: JwtData):
     if request.method == "GET":
         if jwt_data.role == Role.Admin:
-            return SimpleMsg("admin", "role"), 200
+            return SimpleMsg("admin", "role").response(), 200
 
         userinfo, result = provide.get_userinfo(jwt_data)
         if result == GetResult.Fail:
