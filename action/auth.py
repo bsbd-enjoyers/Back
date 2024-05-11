@@ -34,6 +34,15 @@ class CheckLoginResult(Enum):
     error = 3
 
 
+class CheckPermission(Enum):
+    BadPermissions = "Bad permissions"
+
+
+class ReturnType(Enum):
+    TwoVal = 2
+    OneVal = 1
+
+
 class Auth:
     def __init__(self, dbmanager: DataBaseManager) -> None:
         self.DB_manager = dbmanager
@@ -102,6 +111,23 @@ class Auth:
         if self.DB_manager.create_account(userdata)[-1] == QueryResult.Success:
             return RegisterResult.Accept
         return RegisterResult.Decline
+
+    @staticmethod
+    def check_permissions_factory(permissions: list, return_type: ReturnType):
+        def check_permissions(fun):
+            def wrapper(self, entity):
+                if type(entity) is not JwtData:
+                    if entity.jwt_data.role in permissions:
+                        return fun(self, entity)
+                else:
+                    if entity.role in permissions:
+                        return fun(self, entity)
+
+                if return_type == ReturnType.TwoVal:
+                    return None, CheckPermission.BadPermissions
+                return CheckPermission.BadPermissions
+            return wrapper
+        return check_permissions
 
     def drop_session(self, jwt_token):
         pass

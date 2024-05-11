@@ -3,7 +3,7 @@ from db.db_manager import DataBaseManager
 from action.auth import Auth, AuthResult, RegisterResult, CheckLoginResult
 from action.provide import Provide, GetResult
 from action.web import Web
-from action.update import Update, OrderOperationResult, OrderOperationResult
+from action.update import Update, OperationResult, OperationResult
 from dto.auth import *
 import ssl
 from dto.order import UpdateOrder, Action
@@ -83,9 +83,9 @@ def delete(jwt_data):
         print(e)
         return SimpleMsg("Bad Json").response(), 400
 
-    status = update.delete_order(order)
+    status = update.delete_entity(order)
     print(f"Delete ended with result {status}")
-    if status != OrderOperationResult.Success:
+    if status != OperationResult.Success:
         return SimpleResult(False).response(), 200
 
     return SimpleResult(True).response(), 200
@@ -104,7 +104,7 @@ def orders(jwt_data: JwtData):
         if order.action == Action.Create:
             status = update.add_order(order)
             print(f"Order registration ended with {status}")
-            if status != OrderOperationResult.Registered:
+            if status != OperationResult.Registered:
                 return SimpleResult(False).response(), 400
 
             return SimpleResult(True).response(), 200
@@ -112,7 +112,7 @@ def orders(jwt_data: JwtData):
         elif order.action == Action.Submit:
             status = update.change_client_order_status(order)
             print(f"Order submit ended with {status}")
-            if status != OrderOperationResult.Success:
+            if status != OperationResult.Success:
                 return SimpleResult(False).response(), 200
 
             return SimpleResult(True).response(), 200
@@ -120,7 +120,7 @@ def orders(jwt_data: JwtData):
         elif order.action == Action.Update:
             status = update.change_master_order_info(order)
             print(f"Order update ended with {status}")
-            if status != OrderOperationResult.Success:
+            if status != OperationResult.Success:
                 return SimpleResult(False).response(), 200
 
             return SimpleResult(True).response(), 200

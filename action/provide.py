@@ -1,8 +1,9 @@
 from db.db_manager import DataBaseManager, QueryResult
 from dto.auth import JwtData, Role
 from dto.user import UserInfo
-from dto.simple import Query
+from dto.simple import Query, Entity
 from dto.order import Orders
+from action.auth import Auth, ReturnType
 
 
 class GetResult:
@@ -14,6 +15,7 @@ class Provide:
     def __init__(self, dbmanager: DataBaseManager):
         self.DB_manager = dbmanager
 
+    @Auth.check_permissions_factory([Role.Client, Role.Master], ReturnType.TwoVal)
     def get_userinfo(self, jwt_data: JwtData) -> (UserInfo, GetResult):
 
         if jwt_data.role == Role.Client:
@@ -34,6 +36,7 @@ class Provide:
 
         return userinfo, GetResult.Success
 
+    @Auth.check_permissions_factory([Role.Client, Role.Master], ReturnType.TwoVal)
     def get_orders(self, jwt_data: JwtData) -> (Orders, GetResult):  # TODO handle admin
         if jwt_data.role == Role.Client:
             orders, result = self.DB_manager.get_client_orders(jwt_data.id)
@@ -45,7 +48,8 @@ class Provide:
         orders = Orders(orders)
         return orders, GetResult.Success
 
-    def __search_master(self, query: Query):
+    @Auth.check_permissions_factory([Role.Admin, Role.Master], ReturnType.TwoVal)
+    def __search_orders(self, query: Query):
         result, status = self.DB_manager.search_order(query.query)
         if status == QueryResult.Fail:
             return None, status
@@ -53,7 +57,7 @@ class Provide:
         return orders, GetResult.Success
 
     def search(self, query: Query) -> [Orders]:
-        if query.jwt_data.role == Role.Master:
-            return self.__search_master(query)
+        if query.entity == Entity.Order:
+            return self.__search_orders(query)
         else:
             return None, GetResult.Fail

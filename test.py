@@ -7,7 +7,7 @@ check_login_json = {
     "login": "zippo"
 }
 register_json = {
-    "login": "miga",
+    "login": "diga",
     "password": "pupa",
     "role": "master",
     "fullname": "abobchik",
@@ -20,7 +20,7 @@ register_json = {
     }
 }
 login_json = {
-    "login": "miga",
+    "login": "diga",
     "password": "pupa"
 }
 
@@ -89,8 +89,8 @@ def search(data, ses):
 
 s = Session()
 #check_login(check_login_json, s)
-#register(register_json, s)
+register(register_json, s)
 login(login_json, s)
-#add_order(order_json, s)
+add_order(order_json, s)
 search(search_json, s)
 

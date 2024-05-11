@@ -3,10 +3,11 @@ from dto.order import UpdateOrder, Submit, OrderStatus
 from enum import Enum
 from datetime import datetime
 from dto.auth import Role
-from dto.simple import DeleteEntity
+from dto.simple import DeleteEntity, Entity
+from action.auth import Auth, ReturnType
 
 
-class OrderOperationResult(Enum):
+class OperationResult(Enum):
     BadFormat = "Date format is dd.mm.yyyy"
     DateExpired = "Date is expired"
     BadCost = "Something is wrong with the cost"
@@ -28,26 +29,25 @@ class Update:
         try:
             date = datetime.strptime(order.create.deadline, "%d.%m.%Y")
         except ValueError:
-            return OrderOperationResult.BadFormat
+            return OperationResult.BadFormat
 
         if date < datetime.now():
-            return OrderOperationResult.DateExpired
+            return OperationResult.DateExpired
 
         order.create.deadline = date
 
     @staticmethod
     def __check_cost(order: UpdateOrder):
         if type(order.create.cost) is not int or order.create.cost < 0:
-            return OrderOperationResult.BadCost
+            return OperationResult.BadCost
 
     @staticmethod
     def __check_empty_desc(order: UpdateOrder):
         if not bool(order.create.desc):
-            return OrderOperationResult.EmptyDesc
+            return OperationResult.EmptyDesc
 
-    def add_order(self, order: UpdateOrder) -> OrderOperationResult:
-        if order.jwt_data.role != Role.Client:
-            return OrderOperationResult.BadPermissions
+    @Auth.check_permissions_factory([Role.Client], ReturnType.OneVal)
+    def add_order(self, order: UpdateOrder) -> OperationResult:
         status = self.__check_order_date(order)
         status = self.__check_cost(order) if status is None else status
         status = self.__check_empty_desc(order) if status is None else status
@@ -56,19 +56,17 @@ class Update:
             return status
 
         if self.DB_manager.create_order(order)[-1] == QueryResult.Fail:
-            return OrderOperationResult.BadData
+            return OperationResult.BadData
 
-        return OrderOperationResult.Registered
+        return OperationResult.Registered
 
-    def change_client_order_status(self, order: UpdateOrder) -> OrderOperationResult:
-        if order.jwt_data.role != Role.Client:
-            return OrderOperationResult.Fail
-
+    @Auth.check_permissions_factory([Role.Client], ReturnType.OneVal)
+    def change_client_order_status(self, order: UpdateOrder) -> OperationResult:
         order_status, query_status = self.DB_manager.get_order_status(order)
         if query_status != QueryResult.Success:
             return query_status
         if order_status != OrderStatus.Updated:
-            return OrderOperationResult.BadOrderStatus
+            return OperationResult.BadOrderStatus
 
         if order.submit.submit == Submit.Accept:
             _, result = self.DB_manager.set_client_submit(order)
@@ -78,28 +76,34 @@ class Update:
         if result == QueryResult.Fail:
             return result
 
-        return OrderOperationResult.Success
+        return OperationResult.Success
 
-    def delete_order(self, order: DeleteEntity) -> OrderOperationResult:
-        if order.jwt_data.role != Role.Client:  # TODO: Add admin
-            return OrderOperationResult.BadPermissions
+    def delete_entity(self, entity_info: DeleteEntity) -> OperationResult:
+        if entity_info.entity == Entity.Order:
+            return self.__delete_order(entity_info)
+        else:
+            return OperationResult.Fail
+
+    @Auth.check_permissions_factory([Role.Client, Role.Admin], ReturnType.OneVal)
+    def __delete_order(self, order: DeleteEntity) -> OperationResult:
         _, query_status = self.DB_manager.delete_order(order)
         if query_status != QueryResult.Success:
             return query_status
-        return OrderOperationResult.Success
+        return OperationResult.Success
 
-    def change_master_order_info(self, order: UpdateOrder) -> OrderOperationResult:
+    @Auth.check_permissions_factory([Role.Master], ReturnType.OneVal)
+    def change_master_order_info(self, order: UpdateOrder) -> OperationResult:
         if order.jwt_data.role != Role.Master:
-            return OrderOperationResult.BadPermissions
+            return OperationResult.BadPermissions
 
         order_status, query_status = self.DB_manager.get_order_status(order)
         if query_status != QueryResult.Success:
             return query_status
         if order_status != OrderStatus.Created:
-            return OrderOperationResult.BadOrderStatus
+            return OperationResult.BadOrderStatus
 
         _, result = self.DB_manager.set_master_info_order(order)
         if result == QueryResult.Fail:
             return result
 
-        return OrderOperationResult.Success
+        return OperationResult.Success
