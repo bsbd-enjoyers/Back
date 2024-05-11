@@ -29,8 +29,8 @@ class JwtCheckResult(Enum):
 
 
 class CheckLoginResult(Enum):
-    true = 1
-    false = 2
+    true = True
+    false = False
 
 
 class CheckPermission(Enum):
@@ -106,9 +106,7 @@ class Auth:
         user_card, result = self.DB_manager.find_account(userdata.username)
         if result == QueryResult.Fail:
             return result
-        if user_card:
-            return CheckLoginResult.true
-        return CheckLoginResult.false
+        return CheckLoginResult(bool(user_card))
 
     def register(self, userdata: RegisterData):
         if userdata.role == Role.Admin:
