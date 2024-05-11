@@ -62,8 +62,12 @@ class Auth:
 
         if service_data.role == Role.Master:
             user_card, search_res = self.DB_manager.get_master(userdata.username)
-        else:
+            user_card = user_card[0]
+        elif service_data.role == Role.Client:
             user_card, search_res = self.DB_manager.get_client(userdata.username)
+            user_card = user_card[0]
+        else:
+            user_card = 0
 
         if search_res == QueryResult.Fail:
             return None, search_res
@@ -71,7 +75,7 @@ class Auth:
         if not sha512_crypt.verify(userdata.password, service_card[1]):
             return None, AuthResult.WrongPassword
 
-        return self.__gen_jwt(service_data.login, service_data.role, user_card[0]), AuthResult.Accept
+        return self.__gen_jwt(service_data.login, service_data.role, user_card), AuthResult.Accept
 
     @staticmethod
     def __gen_jwt(username, role, user_id) -> str:
