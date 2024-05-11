@@ -7,7 +7,7 @@ from enum import Enum
 class Entity(Enum):
     Master = "master"
     Client = "client"
-    Orders = "order"
+    Order = "order"
 
 
 class SimpleResult(ResponsePrototype):
@@ -25,6 +25,7 @@ class DeleteEntity(DataPrototype):
         self.jwt_data = jwt_data
         self.entity = Entity(data.get("entity"))
         self.id = data.get("id")
+        self.check_empty()
 
 
 class Query(DataPrototype):

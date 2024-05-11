@@ -185,8 +185,12 @@ class DataBaseManager:
     @handle_sql_query
     def delete_order(self, delete_info: DeleteEntity):
         with self.conn.cursor() as cur:
-            cur.execute("DELETE FROM public.\"Order\" WHERE order_id=%s client_id=%s",
+            cur.execute("DELETE FROM public.\"Order\" WHERE order_id=%s AND client_id=%s RETURNING product_id",
                         (delete_info.id, delete_info.jwt_data.id))
-            deleted = cur.fetchone()[0]
-            if deleted != 1:
-                raise RuntimeError(f"Bad Number of records was deleted {deleted}")
+            product_id = cur.fetchall()
+            print(product_id)
+            if len(product_id) != 1:
+                raise RuntimeError(f"Bad Number of records was deleted {len(product_id)}")
+            cur.execute("DELETE FROM public.\"Product\" WHERE product_id=%s",
+                        (product_id[0][0],))
+
