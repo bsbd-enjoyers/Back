@@ -221,7 +221,7 @@ class DataBaseManager:
             cur.execute("SELECT master_id, master_full_name, master_email, master_phone, service_data_login, "
                         "master_detailed_info FROM public.\"Master\" JOIN public.\"Service_data\" ON "
                         "public.\"Service_data\".service_data_id=public.\"Master\".master_service_id Where LOWER("
-                        "master_full_name) ~ %s OR LOWER(master_email) ~ %s OR"
+                        "master_full_name) ~ %s OR LOWER(master_email) ~ %s OR "
                         "LOWER(master_detailed_info) ~ %s", (substr, substr, substr,))
             result = cur.fetchall()
         return result
