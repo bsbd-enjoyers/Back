@@ -9,9 +9,10 @@ class UserInfo(ResponsePrototype):
         self.fullname = user_info_tuple[1]
         self.email = user_info_tuple[2]
         self.phone = user_info_tuple[3]
+        self.login = user_info_tuple[4]
         self.role = "client"
-        if len(user_info_tuple) == 5:
-            self.about_me = user_info_tuple[4]
+        if len(user_info_tuple) == 6:
+            self.about_me = user_info_tuple[5]
             self.role = "master"
             self.skills = dict()
 

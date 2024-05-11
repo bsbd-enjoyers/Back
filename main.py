@@ -50,7 +50,7 @@ def check_login():
 
     # print(login_json)
     result = auth.check_login_exists(check_login_class)
-    if result == CheckLoginResult.error:
+    if result in (CheckLoginResult.true, CheckLoginResult.false):
         return SimpleMsg("Bad Json").response(), 400
 
     if result == CheckLoginResult.true:
@@ -66,7 +66,7 @@ def search(jwt_data):
         query = Query(jwt_data, request.get_json())
     except ValueError as e:
         print(e)
-        return SimpleResult(False).response(), 400
+        return SimpleMsg("Bad Json").response(), 400
     query_result, status = provide.search(query)
     print(f"Search ended with result {status}")
     if status != GetResult.Success:
@@ -130,7 +130,6 @@ def orders(jwt_data: JwtData):
     if request.method == "GET":
         order_records, result = provide.get_orders(jwt_data)
 
-        print(order_records, result)
         if result != GetResult.Success:
             return SimpleMsg("Bad Request").response(), 400
 

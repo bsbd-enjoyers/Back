@@ -79,7 +79,7 @@ class DataBaseManager:
     @handle_sql_query
     def get_client(self, username):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT client_id, client_full_name, client_email, client_phone "
+            cur.execute("SELECT client_id, client_full_name, client_email, client_phone, service_data_login "
                         "FROM public.\"Client\" JOIN public.\"Service_data\" ON "
                         "public.\"Service_data\".service_data_id=public.\"Client\".client_service_id Where "
                         "service_data_login=%s", (username,))
@@ -89,8 +89,8 @@ class DataBaseManager:
     @handle_sql_query
     def get_master(self, username):
         with self.conn.cursor() as cur:
-            cur.execute("SELECT master_id, master_full_name, master_email, master_phone, master_detailed_info "
-                        "FROM public.\"Master\" JOIN public.\"Service_data\" ON "
+            cur.execute("SELECT master_id, master_full_name, master_email, master_phone, service_data_login"
+                        ", master_detailed_info FROM public.\"Master\" JOIN public.\"Service_data\" ON "
                         "public.\"Service_data\".service_data_id=public.\"Master\".master_service_id Where "
                         "service_data_login=%s",
                         (username,))
@@ -197,9 +197,8 @@ class DataBaseManager:
     @handle_sql_query
     def ban_account(self, ban_info: ManageEntity):
         with self.conn.cursor() as cur:
-            cur.execute("UPDATE public.\"Service_data\" SET service_data_banned=true WHERE service_data_role=%s AND "
-                        "service_data_id=%s RETURNING service_data_id",
-                        (ban_info.entity.value, ban_info.id,))
+            cur.execute("UPDATE public.\"Service_data\" SET service_data_banned=true WHERE service_data_id=%s "
+                        "RETURNING service_data_id", (ban_info.id,))
             banned_id = cur.fetchall()
             if len(banned_id) != 1:
                 raise RuntimeError(f"Bad Number of records was deleted {len(banned_id)}")
@@ -208,9 +207,10 @@ class DataBaseManager:
     def search_clients(self, substr: str):
         substr = substr.lower()
         with self.conn.cursor() as cur:
-            cur.execute("SELECT client_id, client_full_name, client_email, client_phone "
-                        "FROM public.\"Client\" WHERE LOWER(client_full_name) ~ %s OR LOWER(client_email) ~ %s",
-                        (substr, substr,))
+            cur.execute("SELECT client_id, client_full_name, client_email, client_phone, service_data_login "
+                        "FROM public.\"Client\" JOIN public.\"Service_data\" ON "
+                        "public.\"Service_data\".service_data_id=public.\"Client\".client_service_id"
+                        " WHERE LOWER(client_full_name) ~ %s OR LOWER(client_email) ~ %s", (substr, substr,))
             result = cur.fetchall()
         return result
 
@@ -218,8 +218,10 @@ class DataBaseManager:
     def search_masters(self, substr: str):
         substr = substr.lower()
         with self.conn.cursor() as cur:
-            cur.execute("SELECT master_id, master_full_name, master_email, master_phone, master_detailed_info "
-                        "FROM public.\"Master\"  Where LOWER(master_full_name) ~ %s OR LOWER(master_email) ~ %s OR "
+            cur.execute("SELECT master_id, master_full_name, master_email, master_phone, service_data_login, "
+                        "master_detailed_info FROM public.\"Master\" JOIN public.\"Service_data\" ON "
+                        "public.\"Service_data\".service_data_id=public.\"Master\".master_service_id Where LOWER("
+                        "master_full_name) ~ %s OR LOWER(master_email) ~ %s OR"
                         "LOWER(master_detailed_info) ~ %s", (substr, substr, substr,))
             result = cur.fetchall()
         return result
