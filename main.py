@@ -125,13 +125,13 @@ def orders(jwt_data: JwtData):
 
             return SimpleResult(True).response(), 200
 
-        else:
-            return SimpleMsg("Bad Request").response(), 400
+        return SimpleMsg("Bad Request").response(), 400
 
     if request.method == "GET":
         order_records, result = provide.get_orders(jwt_data)
 
-        if result == GetResult.Fail:
+        print(order_records, result)
+        if result != GetResult.Success:
             SimpleMsg("Bad Request").response(), 400
 
         return order_records.response(), 200
