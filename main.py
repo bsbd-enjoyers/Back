@@ -3,7 +3,7 @@ from db.db_manager import DataBaseManager
 from action.auth import Auth, AuthResult, RegisterResult, CheckLoginResult
 from action.provide import Provide, GetResult
 from action.web import Web
-from action.update import Update, OrderRegister, UpdateResult
+from action.update import Update, OrderOperationResult, OrderOperationResult
 from dto.auth import *
 import ssl
 from dto.order import UpdateOrder, Action
@@ -68,9 +68,27 @@ def search(jwt_data):
         print(e)
         return SimpleResult(False).response(), 400
     query_result, status = provide.search(query)
+    print(f"Search ended with result {status}")
     if status != GetResult.Success:
         return SimpleResult(False).response(), 200
     return query_result.response(), 200  # TODO: then then search
+
+
+@app.route("/delete", methods=["POST"])
+@web.check_jwt
+def delete(jwt_data):
+    try:
+        order = DeleteEntity(jwt_data, request.get_json())
+    except ValueError as e:
+        print(e)
+        return SimpleMsg("Bad Json").response(), 400
+
+    status = update.delete_order(order)
+    print(f"Delete ended with result {status}")
+    if status != OrderOperationResult.Success:
+        return SimpleResult(False).response(), 200
+
+    return SimpleResult(True).response(), 200
 
 
 @app.route("/orders", methods=["GET", "POST"])
@@ -85,26 +103,26 @@ def orders(jwt_data: JwtData):
 
         if order.action == Action.Create:
             status = update.add_order(order)
-
-            if status != OrderRegister.Registered:
-                return SimpleResult(False).response(), 400
             print(f"Order registration ended with {status}")
+            if status != OrderOperationResult.Registered:
+                return SimpleResult(False).response(), 400
+
             return SimpleResult(True).response(), 200
 
         elif order.action == Action.Submit:
             status = update.change_client_order_status(order)
-            if status != UpdateResult.Success:
+            print(f"Order submit ended with {status}")
+            if status != OrderOperationResult.Success:
                 return SimpleResult(False).response(), 200
 
-            print(f"Order submit ended with {status}")
             return SimpleResult(True).response(), 200
 
         elif order.action == Action.Update:
             status = update.change_master_order_info(order)
-            if status != UpdateResult.Success:
+            print(f"Order update ended with {status}")
+            if status != OrderOperationResult.Success:
                 return SimpleResult(False).response(), 200
 
-            print(f"Order update ended with {status}")
             return SimpleResult(True).response(), 200
 
         else:

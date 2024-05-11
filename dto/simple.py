@@ -4,7 +4,7 @@ from dto.auth import JwtData
 from enum import Enum
 
 
-class SearchEntity(Enum):
+class Entity(Enum):
     Master = "master"
     Client = "client"
     Orders = "order"
@@ -20,11 +20,18 @@ class SimpleMsg(ResponsePrototype):
         self.msg = msg
 
 
+class DeleteEntity(DataPrototype):
+    def __init__(self, jwt_data, data):
+        self.jwt_data = jwt_data
+        self.entity = Entity(data.get("entity"))
+        self.id = data.get("id")
+
+
 class Query(DataPrototype):
     def __init__(self, jwt_data: JwtData, data):
         self.jwt_data = jwt_data
         self.query = data.get("query")
-        self.entity = SearchEntity(data.get("entity"))
+        self.entity = Entity(data.get("entity"))
         self.check_query()
         self.check_empty()
 

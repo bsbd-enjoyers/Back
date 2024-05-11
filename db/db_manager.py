@@ -1,11 +1,12 @@
 import psycopg2 as postgresql
 from dto.auth import RegisterData, Role
 from dto.order import UpdateOrder, OrderStatus
+from dto.simple import DeleteEntity
 
 
 class QueryResult:
-    Success = 1
-    Fail = 0
+    Success = "Query was executed"
+    Fail = "Query Failed"
 
 
 class DataBaseManager:
@@ -19,7 +20,7 @@ class DataBaseManager:
             try:
                 value = request(self, *args, **kwargs)
             except Exception as e:
-                print("SQL Exception")
+                print("Exception during Query:")
                 print(e)
                 self.conn.rollback()
                 return None, QueryResult.Fail
@@ -181,3 +182,11 @@ class DataBaseManager:
             result = cur.fetchall()
         return result
 
+    @handle_sql_query
+    def delete_order(self, delete_info: DeleteEntity):
+        with self.conn.cursor() as cur:
+            cur.execute("DELETE FROM public.\"Order\" WHERE order_id=%s client_id=%s",
+                        (delete_info.id, delete_info.jwt_data.id))
+            deleted = cur.fetchone()[0]
+            if deleted != 1:
+                raise RuntimeError(f"Bad Number of records was deleted {deleted}")

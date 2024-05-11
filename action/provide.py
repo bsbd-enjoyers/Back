@@ -6,8 +6,8 @@ from dto.order import Orders
 
 
 class GetResult:
-    Fail = 1
-    Success = 2
+    Fail = "Troubles receiving info"
+    Success = "Info received successfully"
 
 
 class Provide:
@@ -22,14 +22,14 @@ class Provide:
             userinfo, result = self.DB_manager.get_master(jwt_data.username)
 
         if result == QueryResult.Fail:
-            return None, GetResult.Fail
+            return None, result
 
         userinfo = UserInfo(userinfo)
 
         if userinfo.role == "master":
             skills, result = self.DB_manager.get_skills(userinfo.id)
             if result == QueryResult.Fail:
-                return None, GetResult.Fail
+                return None, result
             userinfo.add_skills(skills)
 
         return userinfo, GetResult.Success
@@ -41,14 +41,14 @@ class Provide:
             orders, result = self.DB_manager.get_master_orders(jwt_data.id)
         print(f"Account {jwt_data.username} requested orders with status {result}")
         if result == QueryResult.Fail:
-            return None, GetResult.Fail
+            return None, result
         orders = Orders(orders)
         return orders, GetResult.Success
 
     def __search_master(self, query: Query):
         result, status = self.DB_manager.search_order(query.query)
         if status == QueryResult.Fail:
-            return None, GetResult.Fail
+            return None, status
         orders = Orders(result)
         return orders, GetResult.Success
 
