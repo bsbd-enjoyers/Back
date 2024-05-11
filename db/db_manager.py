@@ -1,7 +1,7 @@
 import psycopg2 as postgresql
 from dto.auth import RegisterData, Role
 from dto.order import UpdateOrder, OrderStatus
-from dto.simple import ManageEntity
+from dto.simple import ManageEntity, Query
 
 
 class QueryResult:
@@ -171,14 +171,15 @@ class DataBaseManager:
                         "WHERE product_id=%s", (order.update.product_type, order.update.mater_desc, product_id,))
 
     @handle_sql_query
-    def search_order(self, substr: str):
-        substr = substr.lower()
+    def search_order(self, query: Query):
+        substr = query.query.lower()
         with self.conn.cursor() as cur:
             cur.execute("SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, "
                         "order_status, product_name, product_type, product_client_description, "
                         "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON "
                         "public.\"Order\".product_id=public.\"Product\".product_id WHERE "
-                        "public.\"Order\".order_status='created' AND (LOWER(public.\"Product\".product_name) ~ %s OR "
+                        "public.\"Order\".order_status='created'" if query.jwt_data.role == Role.Master else "" +
+                        "AND (LOWER(public.\"Product\".product_name) ~ %s OR"
                         "LOWER(public.\"Product\".product_client_description) ~ %s)", (substr, substr))
             result = cur.fetchall()
         return result

@@ -50,7 +50,7 @@ class Provide:
 
     @Auth.check_permissions_factory([Role.Admin, Role.Master], ReturnType.TwoVal)
     def __search_orders(self, query: Query):
-        result, status = self.DB_manager.search_order(query.query)
+        result, status = self.DB_manager.search_order(query)
         if status == QueryResult.Fail:
             return None, status
         orders = Orders(result)
