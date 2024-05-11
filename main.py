@@ -141,8 +141,11 @@ def orders(jwt_data: JwtData):
 
 @app.route("/session", methods=["GET", "POST"])
 @web.check_jwt
-def session(jwt_data):
+def session(jwt_data: JwtData):
     if request.method == "GET":
+        if jwt_data.role == Role.Admin:
+            return SimpleMsg("admin", "role"), 200
+
         userinfo, result = provide.get_userinfo(jwt_data)
         if result == GetResult.Fail:
             return SimpleMsg("Bad Request").response(), 400

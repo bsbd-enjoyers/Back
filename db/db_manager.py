@@ -171,7 +171,8 @@ class DataBaseManager:
                         "WHERE product_id=%s", (order.update.product_type, order.update.mater_desc, product_id,))
 
     @handle_sql_query
-    def search_order(self, substr):
+    def search_order(self, substr: str):
+        substr = substr.lower()
         with self.conn.cursor() as cur:
             cur.execute("SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, "
                         "order_status, product_name, product_type, product_client_description, "
@@ -202,4 +203,25 @@ class DataBaseManager:
             banned_id = cur.fetchall()
             if len(banned_id) != 1:
                 raise RuntimeError(f"Bad Number of records was deleted {len(banned_id)}")
+
+    @handle_sql_query
+    def search_clients(self, substr: str):
+        substr = substr.lower()
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT client_id, client_full_name, client_email, client_phone "
+                        "FROM public.\"Client\" WHERE LOWER(client_full_name) ~ %s OR LOWER(client_email) ~ %s",
+                        (substr, substr,))
+            result = cur.fetchall()
+        return result
+
+    @handle_sql_query
+    def search_masters(self, substr: str):
+        substr = substr.lower()
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT master_id, master_full_name, master_email, master_phone, master_detailed_info "
+                        "FROM public.\"Master\"  Where LOWER(master_full_name) ~ %s OR LOWER(master_email) ~ %s OR "
+                        "LOWER(master_detailed_info) ~ %s", (substr, substr, substr,))
+            result = cur.fetchall()
+        return result
+
 

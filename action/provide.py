@@ -1,6 +1,6 @@
 from db.db_manager import DataBaseManager, QueryResult
 from dto.auth import JwtData, Role
-from dto.user import UserInfo
+from dto.user import UserInfo, Users
 from dto.simple import Query, Entity
 from dto.order import Orders
 from action.auth import Auth, ReturnType
@@ -56,8 +56,26 @@ class Provide:
         orders = Orders(result)
         return orders, GetResult.Success
 
-    def search(self, query: Query) -> [Orders]:
+    @Auth.check_permissions_factory([Role.Admin], ReturnType.TwoVal)
+    def __search_clients(self, query: Query):
+        result, status = self.DB_manager.search_clients(query.query)
+        if status == QueryResult.Fail:
+            return None, status
+        users = Users(result)
+        return users, GetResult.Success
+
+    @Auth.check_permissions_factory([Role.Admin], ReturnType.TwoVal)
+    def __search_masters(self, query: Query):
+        result, status = self.DB_manager.search_masters(query.query)
+        if status == QueryResult.Fail:
+            return None, status
+        users = Users(result)
+        return users, GetResult.Success
+
+    def search(self, query: Query) -> (Orders, GetResult):
         if query.entity == Entity.Order:
             return self.__search_orders(query)
+        elif query.entity == Entity.Client:
+            return self.__search_clients(query)
         else:
-            return None, GetResult.Fail
+            return self.__search_masters(query)

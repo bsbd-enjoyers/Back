@@ -27,3 +27,12 @@ class UserInfo(ResponsePrototype):
             raise ValueError(f"Empty skills for master {self.fullname}")
         self.__dict__.pop('id')
         return jsonify(self.__dict__)
+
+    def get_dict(self):
+        self.__dict__.pop('id')
+        return self.__dict__
+
+
+class Users(ResponsePrototype):
+    def __init__(self, user_cards):
+        self.users = [UserInfo(user_info).get_dict() for user_info in user_cards]

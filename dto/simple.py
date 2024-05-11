@@ -16,8 +16,8 @@ class SimpleResult(ResponsePrototype):
 
 
 class SimpleMsg(ResponsePrototype):
-    def __init__(self, msg):
-        self.msg = msg
+    def __init__(self, msg, field="msg"):
+        self.__dict__[field] = msg
 
 
 class ManageEntity(DataPrototype):
