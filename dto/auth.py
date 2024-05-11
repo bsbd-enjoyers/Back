@@ -63,6 +63,6 @@ class JwtData(DataPrototype):
     def __init__(self, jwt_dict):
         self.username = jwt_dict.get("username")
         self.date = jwt_dict.get("date")
-        self.role = Role.get(jwt_dict.get("role"))
+        self.role = Role(jwt_dict.get("role"))
         self.id = jwt_dict.get("id")
         self.check_empty()
