@@ -8,14 +8,6 @@ class Role(Enum):
     Client = "client"
     Admin = "admin"
 
-    @staticmethod
-    def get(value):
-        try:
-            role = Role(value)
-        except ValueError:
-            return None
-        return role
-
 
 class AuthData(DataPrototype):
     def __init__(self, userdata):
@@ -30,7 +22,7 @@ class RegisterData(DataPrototype):
         self.username = userdata.get("login")
         self.password = userdata.get("password")
         self.fullname = userdata.get("fullname")
-        self.role = Role.get(userdata.get("role"))
+        self.role = Role(userdata.get("role"))
         self.email = userdata.get("email")
         self.phone = userdata.get("phone")
         if self.role == Role.Master:

@@ -106,6 +106,8 @@ class Auth:
         return CheckLoginResult.false
 
     def register(self, userdata: RegisterData):
+        if userdata.role == Role.Admin:
+            return RegisterResult.Decline
         if self.check_login_exists(userdata) == CheckLoginResult.true:
             return RegisterResult.Decline
         if self.DB_manager.create_account(userdata)[-1] == QueryResult.Success:
