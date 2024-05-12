@@ -179,7 +179,7 @@ class DataBaseManager:
                         "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON "
                         "public.\"Order\".product_id=public.\"Product\".product_id WHERE"
                         " LOWER(public.\"Product\".product_name) ~ %s OR "
-                        "LOWER(public.\"Product\".product_client_description) ~ %s"
+                        "LOWER(public.\"Product\".product_client_description) ~ %s" +
                         " AND public.\"Order\".order_status='created'" if query.jwt_data.role == Role.Master else "", (substr, substr))
             result = cur.fetchall()
         return result
