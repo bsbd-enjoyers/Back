@@ -179,7 +179,7 @@ class DataBaseManager:
             "public.\"Order\".product_id=public.\"Product\".product_id WHERE" \
             " LOWER(public.\"Product\".product_name) ~ %s OR " \
             "LOWER(public.\"Product\".product_client_description) ~ %s" + \
-            f" {'AND public.\"Order\".order_status=\'created\'' if True else ''}"
+            f" {'AND public.\"Order\".order_status=\'created\'' if query.jwt_data.role == Role.Master else ''}"
         with self.conn.cursor() as cur:
             cur.execute(sql_query, (substr, substr))
             result = cur.fetchall()
