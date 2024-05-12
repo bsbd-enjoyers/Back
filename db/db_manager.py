@@ -192,7 +192,7 @@ class DataBaseManager:
             cur.execute("SELECT AVG(public.\"Feedback\".feedback_score) FROM public.\"Feedback\" JOIN "
                         "public.\"Order\" ON public.\"Feedback\".order_id = public.\"Order\".order_id WHERE "
                         "public.\"Order\".master_id=%s", (master_id,))
-            result = cur.fetchone()
+            result = cur.fetchone()[0]
         return result
 
     @handle_sql_query
