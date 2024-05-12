@@ -187,7 +187,8 @@ class DataBaseManager:
             result = cur.fetchall()
         return result
 
-    def __get_avg_score(self, master_id):
+    @handle_sql_query
+    def get_avg_score(self, master_id):
         with self.conn.cursor() as cur:
             cur.execute("SELECT AVG(public.\"Feedback\".feedback_score) FROM public.\"Feedback\" JOIN "
                         "public.\"Order\" ON public.\"Feedback\".order_id = public.\"Order\".order_id WHERE "
@@ -203,8 +204,6 @@ class DataBaseManager:
                         "public.\"Service_data\".service_data_id=public.\"Master\".master_service_id Where "
                         "master_id=%s", (identity.id,))
             master_info = MasterInfo(cur.fetchone())
-            master_info.add_skills(self.get_skills(identity.id))
-            master_info.add_score(self.__get_avg_score(identity.id))
         return master_info
 
     @handle_sql_query

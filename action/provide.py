@@ -61,6 +61,14 @@ class Provide:
         master_info, status = self.DB_manager.get_master_info(data)
         if status != QueryResult.Success:
             return None, status
+        skills, status = self.DB_manager.get_skills(data.id)
+        if status != QueryResult.Success:
+            return None, status
+        avg_score, status = self.DB_manager.get_avg_score(data.id)
+        if status != QueryResult.Success:
+            return None, status
+        master_info.add_skills(skills)
+        master_info.add_score(avg_score)
         return master_info, GetResult.Success
 
     @Auth.check_permissions_factory([Role.Admin], ReturnType.TwoVal)
