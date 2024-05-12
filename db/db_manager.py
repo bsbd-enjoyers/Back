@@ -177,10 +177,10 @@ class DataBaseManager:
             cur.execute("SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, "
                         "order_status, product_name, product_type, product_client_description, "
                         "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON "
-                        "public.\"Order\".product_id=public.\"Product\".product_id WHERE " +
-                        "public.\"Order\".order_status='created' AND" if query.jwt_data.role == Role.Master else "" +
-                        " (LOWER(public.\"Product\".product_name) ~ %s OR "
-                        "LOWER(public.\"Product\".product_client_description) ~ %s)", (substr, substr))
+                        "public.\"Order\".product_id=public.\"Product\".product_id WHERE"
+                        " LOWER(public.\"Product\".product_name) ~ %s OR "
+                        "LOWER(public.\"Product\".product_client_description) ~ %s"
+                        " AND public.\"Order\".order_status='created'" if query.jwt_data.role == Role.Master else "", (substr, substr))
             result = cur.fetchall()
         return result
 
