@@ -173,7 +173,7 @@ class DataBaseManager:
     @handle_sql_query
     def search_order(self, query: Query):
         substr = query.query.lower()
-        sql_query = f"SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, " \
+        sql_query = "SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, " \
             "order_status, product_name, product_type, product_client_description, " \
             "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON " \
             "public.\"Order\".product_id=public.\"Product\".product_id WHERE" \
