@@ -49,7 +49,7 @@ class MasterInfo(ResponsePrototype):
             self.skills[skill[0]] = skill[1]
 
     def add_score(self, score):
-        self.score = float(score)
+        self.score = 0 if score is None else float(score)
 
 
 class Users(ResponsePrototype):
