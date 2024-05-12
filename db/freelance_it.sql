@@ -25,8 +25,7 @@ CREATE TABLE IF NOT EXISTS public."Document"
 CREATE TABLE IF NOT EXISTS public."Feedback"
 (
     feedback_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
-    master_id bigint NOT NULL,
-    client_id bigint NOT NULL,
+    order_id bigint NOT NULL,
     feedback_score smallint NOT NULL,
     feedback_comment text COLLATE pg_catalog."default",
     CONSTRAINT "Feedback_pkey" PRIMARY KEY (feedback_id)
@@ -47,19 +46,20 @@ CREATE TABLE IF NOT EXISTS public."Order"
 (
     order_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     client_id bigint NOT NULL,
-    master_id bigint NOT NULL,
+    master_id bigint,
     product_id bigint NOT NULL,
     order_deadline date,
-    order_totalcost bigint,
+    order_master_cost bigint,
     order_status character varying(50) COLLATE pg_catalog."default",
+    order_client_cost bigint,
     CONSTRAINT "Order_pkey" PRIMARY KEY (order_id)
 );
 
 CREATE TABLE IF NOT EXISTS public."Product"
 (
     product_id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
-    product_type character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    product_full_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
+    product_type character varying(30) COLLATE pg_catalog."default",
+    product_name character varying(50) COLLATE pg_catalog."default" NOT NULL,
     product_client_description text COLLATE pg_catalog."default" NOT NULL,
     product_master_specification text COLLATE pg_catalog."default",
     CONSTRAINT "Product_pkey" PRIMARY KEY (product_id)
@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS public."Service_data"
     service_data_login character varying(50) COLLATE pg_catalog."default" NOT NULL,
     service_data_password character varying(256) COLLATE pg_catalog."default" NOT NULL,
     service_data_role character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    service_data_banned boolean NOT NULL DEFAULT false,
     CONSTRAINT "Service_data_pkey" PRIMARY KEY (service_data_id),
     CONSTRAINT service_data_login UNIQUE (service_data_login)
 );
@@ -101,16 +102,8 @@ ALTER TABLE IF EXISTS public."Document"
 
 
 ALTER TABLE IF EXISTS public."Feedback"
-    ADD CONSTRAINT client_id FOREIGN KEY (client_id)
-    REFERENCES public."Client" (client_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS public."Feedback"
-    ADD CONSTRAINT master_id FOREIGN KEY (master_id)
-    REFERENCES public."Master" (master_id) MATCH SIMPLE
+    ADD CONSTRAINT order_id FOREIGN KEY (order_id)
+    REFERENCES public."Order" (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
