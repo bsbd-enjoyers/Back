@@ -1,5 +1,5 @@
 from db.db_manager import DataBaseManager, QueryResult
-from dto.order import UpdateOrder, Submit, OrderStatus
+from dto.order import UpdateOrder, Submit, OrderStatus, Review
 from enum import Enum
 from datetime import datetime
 from dto.auth import Role
@@ -83,6 +83,13 @@ class Update:
             return self.__delete_order(entity_info)
         else:
             return self.__ban_account(entity_info)
+
+    @Auth.check_permissions_factory([Role.Client], ReturnType.OneVal)
+    def add_review(self, review: Review):
+        _, status = self.DB_manager.create_review(review)
+        if status != QueryResult.Success:
+            return status
+        return OperationResult.Success
 
     @Auth.check_permissions_factory([Role.Admin], ReturnType.OneVal)
     def __ban_account(self, entity_info: ManageEntity):

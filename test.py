@@ -87,10 +87,12 @@ def search(data, ses):
     print(resp.text)
 
 
+
+#print(r)
+
 s = Session()
 #check_login(check_login_json, s)
-register(register_json, s)
+#register(register_json, s)
 login(login_json, s)
-add_order(order_json, s)
+#add_order(order_json, s)
 search(search_json, s)
-

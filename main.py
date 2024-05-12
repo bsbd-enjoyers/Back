@@ -6,7 +6,7 @@ from action.web import Web
 from action.update import Update, OperationResult, OperationResult
 from dto.auth import *
 import ssl
-from dto.order import UpdateOrder, Action
+from dto.order import UpdateOrder, Action, Review
 from dto.simple import *
 from config import POSTGRESQL_LOGIN, SSL_KEY, SSL_CERT
 
@@ -85,6 +85,35 @@ def manage(jwt_data):
     if status != OperationResult.Success:
         return SimpleResult(False).response(), 200
 
+    return SimpleResult(True).response(), 200
+
+
+@app.route("/info", methods=["POST"])
+@web.check_jwt
+def get_info(jwt_data):
+    try:
+        identity = GetIdentity(jwt_data, request.get_json())
+    except ValueError as e:
+        print(e)
+        return SimpleMsg("Bad Json").response(), 400
+    master_info, status = provide.get_master_info(identity)
+    if status != GetResult.Success:
+        return SimpleResult(False).response(), 400
+    return master_info.response(), 200
+
+
+@app.route("/reviews", methods=["POST"])
+@web.check_jwt
+def reviews(jwt_data):
+    try:
+        review = Review(jwt_data, request.get_json())
+    except ValueError as e:
+        print(e)
+        return SimpleMsg("Bad Json").response(), 400
+    status = update.add_review(review)
+    print(f"Add review ended with status {status}")
+    if status != OperationResult.Success:
+        return SimpleResult(False).response(), 400
     return SimpleResult(True).response(), 200
 
 

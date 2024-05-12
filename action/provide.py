@@ -1,7 +1,7 @@
 from db.db_manager import DataBaseManager, QueryResult
 from dto.auth import JwtData, Role
-from dto.user import UserInfo, Users
-from dto.simple import Query, Entity
+from dto.user import UserInfo, Users, MasterInfo
+from dto.simple import Query, Entity, GetIdentity
 from dto.order import Orders
 from action.auth import Auth, ReturnType
 
@@ -56,8 +56,15 @@ class Provide:
         orders = Orders(result)
         return orders, GetResult.Success
 
+    @Auth.check_permissions_factory([Role.Client], ReturnType.TwoVal)
+    def get_master_info(self, data: GetIdentity) -> (MasterInfo, GetResult):
+        master_info, status = self.DB_manager.get_master_info(data)
+        if status != QueryResult.Success:
+            return None, status
+        return master_info, GetResult.Success
+
     @Auth.check_permissions_factory([Role.Admin], ReturnType.TwoVal)
-    def __search_clients(self, query: Query):
+    def __search_clients(self, query: Query) -> (Users, GetResult):
         result, status = self.DB_manager.search_clients(query.query)
         if status == QueryResult.Fail:
             return None, status
@@ -65,7 +72,7 @@ class Provide:
         return users, GetResult.Success
 
     @Auth.check_permissions_factory([Role.Admin], ReturnType.TwoVal)
-    def __search_masters(self, query: Query):
+    def __search_masters(self, query: Query) -> (Users, GetResult):
         result, status = self.DB_manager.search_masters(query.query)
         if status == QueryResult.Fail:
             return None, status

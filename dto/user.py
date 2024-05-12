@@ -34,6 +34,27 @@ class UserInfo(ResponsePrototype):
         return self.__dict__
 
 
+class MasterInfo(ResponsePrototype):
+    def __init__(self, master_card):
+        self.fullname = master_card[0]
+        self.email = master_card[1]
+        self.phone = master_card[2]
+        self.about_me = master_card[3]
+        self.role = "master"
+        self.skills = dict()
+        self.score = None
+
+    def add_skills(self, skill_tuple):
+        if self.role == "client":
+            return
+
+        for skill in skill_tuple:
+            self.skills[skill[0]] = skill[1]
+
+    def add_score(self, score):
+        self.score = score
+
+
 class Users(ResponsePrototype):
     def __init__(self, user_cards):
         self.users = [UserInfo(user_info).get_dict() for user_info in user_cards]

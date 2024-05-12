@@ -28,6 +28,13 @@ class ManageEntity(DataPrototype):
         self.check_empty()
 
 
+class GetIdentity(DataPrototype):
+    def __init__(self, jwt_data: JwtData, json_data):
+        self.jwt_data = jwt_data
+        self.id = json_data.get("id_master")
+        self.check_empty()
+
+
 class Query(DataPrototype):
     def __init__(self, jwt_data: JwtData, data):
         self.jwt_data = jwt_data

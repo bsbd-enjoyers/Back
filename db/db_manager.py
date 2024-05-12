@@ -1,7 +1,8 @@
 import psycopg2 as postgresql
 from dto.auth import RegisterData, Role
-from dto.order import UpdateOrder, OrderStatus
-from dto.simple import ManageEntity, Query
+from dto.order import UpdateOrder, OrderStatus, Review
+from dto.simple import ManageEntity, Query, GetIdentity
+from dto.user import MasterInfo
 
 
 class QueryResult:
@@ -175,16 +176,42 @@ class DataBaseManager:
         substr = query.query.lower()
         status_created = 'AND public.\"Order\".order_status=\'created\''
         sql_query = "SELECT order_id, order_deadline, master_id, client_id, order_client_cost, order_master_cost, " \
-            "order_status, product_name, product_type, product_client_description, " \
-            "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON " \
-            "public.\"Order\".product_id=public.\"Product\".product_id WHERE" \
-            " LOWER(public.\"Product\".product_name) ~ %s OR " \
-            "LOWER(public.\"Product\".product_client_description) ~ %s" + \
-            f" { status_created if query.jwt_data.role == Role.Master else ''}"
+                    "order_status, product_name, product_type, product_client_description, " \
+                    "product_master_specification FROM public.\"Order\" JOIN public.\"Product\" ON " \
+                    "public.\"Order\".product_id=public.\"Product\".product_id WHERE" \
+                    " LOWER(public.\"Product\".product_name) ~ %s OR " \
+                    "LOWER(public.\"Product\".product_client_description) ~ %s" + \
+                    f" {status_created if query.jwt_data.role == Role.Master else ''}"
         with self.conn.cursor() as cur:
             cur.execute(sql_query, (substr, substr))
             result = cur.fetchall()
         return result
+
+    def __get_avg_score(self, master_id):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT AVG(public.\"Feedback\".feedback_score) FROM public.\"Feedback\" JOIN "
+                        "public.\"Order\" ON public.\"Feedback\".order_id = public.\"Order\".order_id WHERE "
+                        "public.\"Order\".master_id=%s", (master_id,))
+            result = cur.fetchone()
+        return result
+
+    @handle_sql_query
+    def get_master_info(self, identity: GetIdentity):
+        with self.conn.cursor() as cur:
+            cur.execute("SELECT master_full_name, master_email, master_phone, master_detailed_info "
+                        "FROM public.\"Master\" JOIN public.\"Service_data\" ON "
+                        "public.\"Service_data\".service_data_id=public.\"Master\".master_service_id Where "
+                        "master_id=%s", (identity.id,))
+            master_info = MasterInfo(cur.fetchone())
+            master_info.add_skills(self.get_skills(identity.id))
+            master_info.add_score(self.__get_avg_score(identity.id))
+        return master_info
+
+    @handle_sql_query
+    def create_review(self, review: Review):
+        with self.conn.cursor() as cur:
+            cur.execute("INSERT INTO public.\"Feedback\" (order_id, feedback_score, feedback_comment) VALUES (%s, %s, "
+                        "%s)", (review.order_id, review.score, review.comment,))
 
     @handle_sql_query
     def delete_order(self, delete_info: ManageEntity):
@@ -228,5 +255,3 @@ class DataBaseManager:
                         "LOWER(master_detailed_info) ~ %s", (substr, substr, substr,))
             result = cur.fetchall()
         return result
-
-

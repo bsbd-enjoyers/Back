@@ -91,6 +91,21 @@ class OrderRecord:
         self.master_desc = record[10]
 
 
+class Review(DataPrototype):
+    def __init__(self, jwt_data, review_data):
+        self.jwt_data = jwt_data
+        self.comment = review_data.get("comment")
+        self.score = review_data.get("score")
+        self.order_id = review_data.get("order_id")
+        self.check_score()
+        self.check_empty()
+
+    def check_score(self):
+        if 0 <= self.score <= 5:
+            return
+        raise ValueError("Score should be 0-5")
+
+
 class Orders(ResponsePrototype):
     def __init__(self, orders_tuple):
         self.orders = [OrderRecord(order).__dict__ for order in orders_tuple]
