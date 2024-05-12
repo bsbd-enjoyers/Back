@@ -209,6 +209,11 @@ class DataBaseManager:
     @handle_sql_query
     def create_review(self, review: Review):
         with self.conn.cursor() as cur:
+            cur.execute("SELECT order_id FROM public.\"Order\" WHERE order_id=%s AND client_id=%s",
+                        (review.order_id, review.jwt_data.id))
+            result = cur.fetchall()
+            if len(result) != 1:
+                raise RuntimeError('Bad number of orders match review criteria')
             cur.execute("INSERT INTO public.\"Feedback\" (order_id, feedback_score, feedback_comment) VALUES (%s, %s, "
                         "%s)", (review.order_id, review.score, review.comment,))
 

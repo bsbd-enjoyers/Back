@@ -92,7 +92,7 @@ class OrderRecord:
 
 
 class Review(DataPrototype):
-    def __init__(self, jwt_data, review_data):
+    def __init__(self, jwt_data: JwtData, review_data):
         self.jwt_data = jwt_data
         self.comment = review_data.get("comment")
         self.score = review_data.get("score")
