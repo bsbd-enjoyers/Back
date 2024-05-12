@@ -3,6 +3,7 @@ from dto.auth import RegisterData, Role
 from dto.order import UpdateOrder, OrderStatus, Review
 from dto.simple import ManageEntity, Query, GetIdentity
 from dto.user import MasterInfo
+from sshtunnel import SSHTunnelForwarder
 
 
 class QueryResult:
@@ -11,13 +12,15 @@ class QueryResult:
 
 
 class DataBaseManager:
-    def __init__(self, creds):
-        self.conn = postgresql.connect(**creds)
+    def __init__(self, postgres_config, ssh_tunnel=None):
+        if ssh_tunnel:
+            self.server = SSHTunnelForwarder(**ssh_tunnel)
+            self.server.start()
+        self.conn = postgresql.connect(**postgres_config)
 
     @staticmethod
     def handle_sql_query(request):
         def wrapper(self, *args, **kwargs):
-            value = None
             try:
                 value = request(self, *args, **kwargs)
             except Exception as e:

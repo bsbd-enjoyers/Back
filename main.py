@@ -8,11 +8,13 @@ from dto.auth import *
 import ssl
 from dto.order import UpdateOrder, Action, Review
 from dto.simple import *
-from config import POSTGRESQL_LOGIN, SSL_KEY, SSL_CERT
+from db.redis_manger import Redis
+from config import *
 
 app = Flask(__name__)
-db_manager = DataBaseManager(POSTGRESQL_LOGIN)
-auth = Auth(db_manager)
+db_manager = DataBaseManager(POSTGRESQL_LOGIN_VM, SSH_TUNNEL_POSTGRES)
+redis_manager = Redis(REDIS_CONFIG, SSH_TUNNEL_REDIS)
+auth = Auth(db_manager, redis_manager)
 provide = Provide(db_manager)
 web = Web(auth)
 update = Update(db_manager)
@@ -161,7 +163,7 @@ def orders(jwt_data: JwtData):
 
         return order_records.response(), 200
 
-    return "cool", 200  # TODO: do orders first
+    return "cool", 200
 
 
 @app.route("/session", methods=["GET", "POST"])
@@ -178,7 +180,7 @@ def session(jwt_data: JwtData):
         return userinfo.response(), 200
     if request.method == "POST":
         auth.drop_session(jwt_data)
-        return "cool", 200  # TODO: then session
+        return SimpleMsg("Session Dropped").response(), 200
 
     return SimpleMsg("Bad Request").response(), 400
 

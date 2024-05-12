@@ -4,7 +4,7 @@ from passlib.hash import sha512_crypt
 from db.db_manager import QueryResult
 import time
 import jwt
-
+from db.redis_manger import Redis
 from config import JWT_SECRET
 from db.db_manager import DataBaseManager
 
@@ -26,6 +26,7 @@ class JwtCheckResult(Enum):
     BadSignature = 2
     Verified = 3
     BadFields = 4
+    Dropped = 5
 
 
 class CheckLoginResult(Enum):
@@ -43,8 +44,9 @@ class ReturnType(Enum):
 
 
 class Auth:
-    def __init__(self, dbmanager: DataBaseManager) -> None:
+    def __init__(self, dbmanager: DataBaseManager, redis: Redis) -> None:
         self.DB_manager = dbmanager
+        self.redis = redis
 
     def login(self, userdata: AuthData):
         service_card, search_res = self.DB_manager.find_account(userdata.username)
@@ -75,12 +77,14 @@ class Auth:
         if not sha512_crypt.verify(userdata.password, service_card[1]):
             return None, AuthResult.WrongPassword
 
-        return self.__gen_jwt(service_data.login, service_data.role.value, user_card), AuthResult.Accept
+        return (self.__gen_jwt(service_data.login, service_data.role.value, user_card, hash(service_data)),
+                AuthResult.Accept)
 
     @staticmethod
-    def __gen_jwt(username, role, user_id) -> str:
-        jwt_token = jwt.encode({"username": username, "date": round(time.time()), "role": role, "id": user_id},
-                               JWT_SECRET, algorithm="HS256")
+    def __gen_jwt(username, role, user_id, jti) -> str:
+        jwt_token = jwt.encode(
+            {"username": username, "date": round(time.time()), "role": role, "id": user_id, "jti": jti},
+            JWT_SECRET, algorithm="HS256")
         return jwt_token
 
     def check_jwt(self, jwt_token) -> (JwtData, JwtCheckResult):
@@ -90,13 +94,16 @@ class Auth:
             return None, JwtCheckResult.BadSignature
 
         try:
-            #print(jwt_data)
             jwt_data = JwtData(jwt_data)
         except ValueError:
             return None, JwtCheckResult.BadFields
+
+        if self.redis.get(jwt_data.jti):
+            return None, JwtCheckResult.Dropped
+
         now = round(time.time())
         # print(f"Now {now}, JWT {jwt_data.date}, Res {now - jwt_data.date}")
-        if not (0 <= now - jwt_data.date < 86400):
+        if not (0 <= now - jwt_data.date < 3600):
             self.drop_session(jwt_token)
             return None, JwtCheckResult.Expired
 
@@ -131,8 +138,10 @@ class Auth:
                 if return_type == ReturnType.TwoVal:
                     return None, CheckPermission.BadPermissions
                 return CheckPermission.BadPermissions
+
             return wrapper
+
         return check_permissions
 
-    def drop_session(self, jwt_token):
-        pass
+    def drop_session(self, jwt_data: JwtData):
+        self.redis.set(jwt_data.jti, 3600)
