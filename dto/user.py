@@ -45,14 +45,11 @@ class MasterInfo(ResponsePrototype):
         self.score = None
 
     def add_skills(self, skill_tuple):
-        if self.role == "client":
-            return
-
         for skill in skill_tuple:
             self.skills[skill[0]] = skill[1]
 
     def add_score(self, score):
-        self.score = score
+        self.score = float(score)
 
 
 class Users(ResponsePrototype):
